@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import ProductsManager from "./src/classes/ProductsManager";
+import ProductsManager from "./classes/ProductsManager";
 
 dotenv.config();
 
