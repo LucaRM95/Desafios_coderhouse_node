@@ -8,34 +8,37 @@ const app: Express = express();
 const port = process.env.PORT;
 const productManager = new ProductsManager();
 
-app.use((req, res, next) => {
-  res.status(404).send({message: "Uuups, La página buscada no existe"});
-  next();
-})
-
 app.get("/", (req: Request, res: Response) => {
-  res.send({ messsage: "Express + TypeScript Server" });
+  res.json({ message: "Express + TypeScript Server" });
 });
 
 app.get("/products", async (req: Request, res: Response) => {
   const limitParam = req.query.limit;
 
   const limit =
-    typeof limitParam === "string" ? parseInt(limitParam, 4) || 4 : 4;
+    typeof limitParam === "string" ? parseInt(limitParam, 10) || 4 : 4;
   const allProducts = await productManager.getProducts();
 
   const limitedProducts = allProducts.slice(0, limit);
 
-  res.send(limitedProducts);
+  res.json(limitedProducts);
 });
 
 app.get("/product/:pid", async (req: Request, res: Response) => {
   const params = req.params.pid;
-  const productId = typeof params === "string" ? parseInt(params) || 1 : 1;
+  const productId = typeof params === "string" ? parseInt(params, 10) || 1 : 1;
 
-  const productById = await productManager.getProductByID(productId);
+  try {
+    const productById = await productManager.getProductByID(productId);
+    res.json(productById);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener el producto" });
+  }
+});
 
-  res.send(productById);
+// Middleware para manejar páginas no encontradas (404)
+app.use((req, res) => {
+  res.status(404).json({ message: "Uuups, La página buscada no existe" });
 });
 
 app.listen(port, () => {
