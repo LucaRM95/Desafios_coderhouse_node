@@ -8,6 +8,11 @@ const app: Express = express();
 const port = process.env.PORT;
 const productManager = new ProductsManager();
 
+app.use((req, res, next) => {
+  res.status(404).send({message: "Uuups, La página buscada no existe"});
+  next();
+})
+
 app.get("/", (req: Request, res: Response) => {
   res.send({ messsage: "Express + TypeScript Server" });
 });
