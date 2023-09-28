@@ -1,0 +1,38 @@
+[
+  {
+    "_id": 1,
+    "_title": "iPhone 12 plus ",
+    "_description": "iPhone 12 plus ",
+    "_price": 1250,
+    "_thumbnail": "iPhone_12_plus.jpg ",
+    "_code": "101",
+    "_stock": 15
+  },
+  {
+    "_id": 2,
+    "_title": "Macbook M2",
+    "_description": "Macbook M2",
+    "_price": 1500,
+    "_thumbnail": "Macbook_M2.jpg",
+    "_code": "102",
+    "_stock": 5
+  },
+  {
+    "_id": 3,
+    "_title": "Notebook Asus ROG",
+    "_description": "Notebook Asus ROG",
+    "_price": 1900,
+    "_thumbnail": "Notebook_Asus_ROG.jpg",
+    "_code": "103",
+    "_stock": 8
+  },
+  {
+    "_id": 4,
+    "_title": "Lenovo i7 gen12",
+    "_description": "Lenovo i7 gen12",
+    "_price": 1500,
+    "_thumbnail": "Lenovo_i7_gen12.jpg",
+    "_code": "104",
+    "_stock": 14
+  }
+]
