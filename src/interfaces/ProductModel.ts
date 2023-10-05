@@ -1,7 +1,11 @@
 export interface ProductModel {
-  _id: number;
-  _code: string;
-  _title: string;
-  _description: string;
-  _price: number;
+  id: string;
+  code: string;
+  status: boolean;
+  title: string;
+  description: string;
+  category: string;
+  thumbnail: Array<string>;
+  price: number;
+  stock: number;
 }

@@ -1,42 +1,22 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, Request, Response, urlencoded } from "express";
 import dotenv from "dotenv";
-import ProductsManager from "./classes/ProductsManager";
+import productsRouter from "./routes/users/usersRoute";
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
-const productManager = new ProductsManager();
+
+app.use(express.json());
+app.use(urlencoded({ extended: true }));
 
 app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Express + TypeScript Server" });
+  res.status(200).redirect('api/products');
 });
 
-app.get("/products", async (req: Request, res: Response) => {
-  const limitParam = req.query.limit;
+app.use('/api', productsRouter);
 
-  const limit =
-    typeof limitParam === "string" ? parseInt(limitParam, 10) || 4 : 4;
-  const allProducts = await productManager.getProducts();
-
-  const limitedProducts = allProducts.slice(0, limit);
-
-  res.json(limitedProducts);
-});
-
-app.get("/product/:pid", async (req: Request, res: Response) => {
-  const params = req.params.pid;
-  const productId = typeof params === "string" ? parseInt(params, 10) || 1 : 1;
-
-  try {
-    const productById = await productManager.getProductByID(productId);
-    res.json(productById);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener el producto" });
-  }
-});
-
-// Middleware para manejar páginas no encontradas (404)
+//Middleware para manejar páginas no encontradas (404)
 app.use((req, res) => {
   res.status(404).json({ message: "Uuups, La página buscada no existe" });
 });

@@ -25,11 +25,11 @@ class ProductsManager {
     }
   }
 
-  async getProductByID(id: number) {
+  async getProductByID(id: string) {
     await this.loadProducts();
     return (
       this.products.find(
-        (product) => product._id === id
+        (product) => product.id === id
       ) || { message: `El producto con id: ${id} no existe` }
     );
   }
@@ -41,7 +41,7 @@ class ProductsManager {
     await this.loadProducts();
 
     const index = this.products.findIndex(
-      (product) => product._code === id || product._id === id
+      (product) => product.code === id || product.id === id
     );
 
     if (index !== -1) {
@@ -52,22 +52,22 @@ class ProductsManager {
 
       await writeFile(this.path, JSON.stringify(this.products));
 
-      return "El producto se actualizó correctamente";
+      return { message: "El producto se actualizó correctamente" };
     } else {
-      return "El producto buscado no se encontró";
+      return { message: "El producto buscado no se encontró" };
     }
   }
 
   async deleteProduct(id: string | number) {
     await this.loadProducts();
     const newProducts = this.products.filter(
-      (product) => product._code !== id && product._id != id
+      (product) => product.code !== id && product.id != id
     );
-
-    console.log(`Producto ${id} eliminado correctamente: `);
-    console.log("*************************************");
-
+    if(this.products.length === newProducts.length){
+      return 1;
+    }
     await writeFile(this.path, JSON.stringify(newProducts));
+    return 0;
   }
 
   private async loadProducts() {
