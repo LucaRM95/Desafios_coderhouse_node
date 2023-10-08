@@ -1,5 +1,5 @@
 import { writeFile, readFile } from "fs/promises";
-import { ProductModel } from "../interfaces/ProductModel";
+import { ProductModel } from "../../models/ProductModel";
 
 class ProductsManager {
   private path: string;
@@ -29,7 +29,7 @@ class ProductsManager {
     await this.loadProducts();
     return (
       this.products.find(
-        (product) => product.id === id
+        (product) => product.id === id || product.code === id
       ) || { message: `El producto con id: ${id} no existe` }
     );
   }

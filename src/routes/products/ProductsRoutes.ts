@@ -1,6 +1,6 @@
 import express, { IRouter, Request, Response } from "express";
-import ProductsManager from "../../classes/ProductsManager";
-import { ProductModel } from "../../interfaces/ProductModel";
+import ProductsManager from "../../classes/products/ProductsManager";
+import { ProductModel } from "../../models/ProductModel";
 import { v4 as uuidv4 } from "uuid";
 import { createValidateProductData } from "../../middlewares/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/updateValidateProductData";
