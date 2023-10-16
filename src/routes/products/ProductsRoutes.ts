@@ -4,6 +4,7 @@ import { ProductModel } from "../../models/ProductModel";
 import { v4 as uuidv4 } from "uuid";
 import { createValidateProductData } from "../../middlewares/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/updateValidateProductData";
+import { emitFromApi } from "../../socket";
 
 const productManager = new ProductsManager();
 const productsRouter: IRouter = express.Router();
@@ -60,6 +61,7 @@ productsRouter.post("/product", createValidateProductData, async (req: Request, 
     stock,
   };
   productManager.addProduct(newProduct);
+  emitFromApi('add-product', newProduct);
   res.status(201).json(newProduct);
 });
 
@@ -79,8 +81,6 @@ productsRouter.put("/product/:pid", updateValidateProductData, async (req: Reque
     code = existingProduct?.code;
   }
 
-  console.log(code)
-
   const newProduct = {
     ...body,
     title, 
@@ -91,12 +91,14 @@ productsRouter.put("/product/:pid", updateValidateProductData, async (req: Reque
     code
   };
   const message = await productManager.updateProduct(pid, newProduct);
+  emitFromApi('edit-product', await productManager.getProducts());
   res.status(201).json(message);
 });
 
 productsRouter.delete("/product/:pid", async (req: Request, res: Response) => {
   const id: string | number = req.params.pid;
-
+  const allProducts = await productManager.getProducts();
+  const productToDelete = allProducts.find((product) => product.code === id || product.id === id);
   if (!id) {
     return res
       .status(400)
@@ -111,6 +113,7 @@ productsRouter.delete("/product/:pid", async (req: Request, res: Response) => {
         message: "No se encuentra el producto con ese id para eliminar",
       });
   }
+  emitFromApi('delete-product', productToDelete?.code);
   return res
     .status(200)
     .json({ message: "El producto fue eliminado existosamente." });
