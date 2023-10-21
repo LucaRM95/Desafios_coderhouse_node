@@ -1,5 +1,5 @@
 export interface ProductModel {
-  id: string;
+  _id: string;
   code: string;
   status: boolean;
   title: string;

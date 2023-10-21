@@ -1,19 +1,15 @@
-import { writeFile, readFile } from "fs/promises";
-import { ProductModel } from "../../models/ProductModel";
+import { ProductModel } from "../../interfaces/ProductModel";
+import Product from "../../models/products/Products";
 
 class ProductsManager {
-  private path: string;
   private products: Array<ProductModel>;
 
   constructor() {
-    this.path = "./db/products.txt";
     this.products = [];
   }
 
   async addProduct(product: ProductModel) {
-    await this.loadProducts();
-    this.products = [...this.products, product];
-    await writeFile(this.path, JSON.stringify(this.products));
+    Product.insertMany(product);
   }
 
   async getProducts() {
@@ -21,62 +17,54 @@ class ProductsManager {
     if (this.products.length > 0) {
       return this.products;
     } else {
-      return []
+      return [];
     }
   }
 
   async getProductByID(id: string) {
-    await this.loadProducts();
-    return (
-      this.products.find(
-        (product) => product.id === id || product.code === id
-      ) || { message: `El producto con id: ${id} no existe` }
-    );
+    const res = Product.findOne({
+      $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
+    });
+
+    return res;
   }
 
   async updateProduct(
     id: string | number,
     updatedProduct: Partial<ProductModel>
   ) {
-    await this.loadProducts();
-
-    const index = this.products.findIndex(
-      (product) => product.code === id || product.id === id
+    const res = Product.findOneAndUpdate(
+      {
+        $or: [{ _id: id }, { code: id }],
+      },
+      {
+        code: updatedProduct.code,
+        status: updatedProduct.status,
+        title: updatedProduct.title,
+        description: updatedProduct.description,
+        category: updatedProduct.category,
+        thumbnail: updatedProduct.thumbnail,
+        price: updatedProduct.price,
+        stock: updatedProduct.stock,
+      }
     );
 
-    if (index !== -1) {
-      this.products[index] = {
-        ...this.products[index],
-        ...updatedProduct,
-      };
-
-      await writeFile(this.path, JSON.stringify(this.products));
-
-      return { message: "El producto se actualizó correctamente" };
-    } else {
-      return { message: "El producto buscado no se encontró" };
-    }
+    return res;
   }
 
   async deleteProduct(id: string | number) {
-    await this.loadProducts();
-    const newProducts = this.products.filter(
-      (product) => product.code !== id && product.id != id
-    );
-    if(this.products.length === newProducts.length){
-      return 1;
-    }
-    await writeFile(this.path, JSON.stringify(newProducts));
-    return 0;
+    const res = await Product.deleteOne({
+      $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
+    });
+    return res.deletedCount;
   }
 
   private async loadProducts() {
     try {
-      const fileContent = await readFile(this.path, "utf-8");
-      this.products = JSON.parse(fileContent);
+      this.products = await Product.find();
     } catch (error) {
       this.products = [];
-      return { message: error }
+      return { message: error };
     }
   }
 }
