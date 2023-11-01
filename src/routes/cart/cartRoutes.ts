@@ -1,5 +1,5 @@
 import express, { IRouter, Request, Response } from "express";
-import CartManager from "../../classes/cart/CartManager";
+import CartManager from "../../dao/cart/CartManager";
 import { cartExist } from "../../middlewares/cartExist";
 
 const cartRouter: IRouter = express.Router();

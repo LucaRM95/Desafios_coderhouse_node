@@ -1,0 +1,23 @@
+<div class="w-[425px] h-[100vh] bg-[#080c23]">
+    <div id="log-messages" class="flex flex-col-reverse h-[95%] text-white overflow-auto">
+        {{#each data}}
+            <div class="flex h-auto w-[20rem] bg-[#075E54] rounded-full ps-2 mb-2 ms-2">
+                <p>{{this.user}}: {{this.message}}</p>
+            </div>
+        {{/each}}
+    </div>
+    <form id="form-message" class="flex space-x-4">
+        <input id="input-message" class="ms-2 ps-[1rem] w-[85%] h-[2rem] rounded-full" type="text" placeholder="Escribe tu mensaje.." required />
+        <button type="submit" class="flex justify-items-center align-items-center text-white bg-[#128C7E] p-1 rounded-full me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
+        </button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/index.js"></script>

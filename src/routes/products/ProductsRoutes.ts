@@ -1,5 +1,5 @@
 import express, { IRouter, Request, Response } from "express";
-import ProductsManager from "../../classes/products/ProductsManager";
+import ProductsManager from "../../dao/products/ProductsManager";
 import { ProductModel } from "../../interfaces/ProductModel";
 import { v4 as uuidv4 } from "uuid";
 import { createValidateProductData } from "../../middlewares/createValidateProductData";

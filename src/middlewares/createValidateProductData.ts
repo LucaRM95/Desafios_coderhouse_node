@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import ProductsManager from "../classes/products/ProductsManager";
+import ProductsManager from "../dao/products/ProductsManager";
 import { ProductModel } from "../interfaces/ProductModel";
 
 const productManager = new ProductsManager();
