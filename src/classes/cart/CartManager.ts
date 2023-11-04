@@ -1,37 +1,27 @@
 import { writeFile, readFile } from "fs/promises";
-import { CartModel, CartProduct } from "../../models/CartModel";
+import { CartModel, CartProduct } from "../../interfaces/CartModel";
 import { v4 as uuid } from "uuid";
 import ProductsManager from "../products/ProductsManager";
+import Cart from "../../models/cart/Carts";
 
 const productManager = new ProductsManager();
 
 class CartManager {
-  private path: string;
-  private cart: Array<CartModel>;
-
-  constructor() {
-    this.path = "./db/cart.txt";
-    this.cart = [];
-  }
-
   async getCart(cid: string) {
-    await this.loadCarts();
+    const res = Cart.findById({ _id: cid });
 
-    return this.cart.find((cart) => cart.cid === cid);
+    return res;
   }
 
   async createCart() {
-    await this.loadCarts();
-    this.cart.push({ cid: uuid(), products: [] });
+    await Cart.insertMany({ _id: uuid(), products: [] });
 
-    await writeFile(this.path, JSON.stringify(this.cart));
     return { message: "Carrito creado correctamente" };
   }
 
   async addProduct(cid: string, pid: string) {
-    await this.loadCarts();
     const products = await productManager.getProducts();
-    const productFinded = products.find((product) => product.id === pid);
+    const productFinded = products.find((product) => product._id === pid);
 
     if (productFinded === undefined) {
       return {
@@ -40,44 +30,20 @@ class CartManager {
       };
     }
 
-    let cartExists = false;
+    const cart = await Cart.findOne({ _id: cid, "products.pid": pid });
 
-    this.cart.map((cart) => {
-      if (cart.cid === cid) {
-        cartExists = true;
-
-        const productInCart = cart.products.find(
-          (product) => product.pid === pid
-        );
-
-        if (productInCart) {
-          productInCart.quantity++;
-        } else {
-          cart.products.push({
-            pid: pid,
-            quantity: 1,
-          });
-        }
-      }
-    });
-
-    if (!cartExists) {
-      return {
-        message: "No se puede agregar un producto a un carrito que no existe.",
-      };
-    }
-
-    await writeFile(this.path, JSON.stringify(this.cart));
-    return { message: "El producto fue agregado al carrito." };
-  }
-
-  private async loadCarts() {
-    try {
-      const fileContent = await readFile(this.path, "utf-8");
-      this.cart = JSON.parse(fileContent);
-    } catch (error) {
-      this.cart = [];
-      return { message: error };
+    if (cart) {
+      // Si el producto ya existe en el carrito, incrementa la cantidad
+      return await Cart.updateOne(
+        { _id: cid, "products.pid": pid },
+        { $inc: { "products.$.quantity": 1 } }
+      );
+    } else {
+      // Si el producto no existe en el carrito, agrégalo
+      return await Cart.updateOne(
+        { _id: cid },
+        { $push: {products: { pid, quantity: 1 }} }
+      );
     }
   }
 }
