@@ -1,0 +1,14 @@
+<h1>Carrito</h1>
+
+<table id="main" role="grid">
+    <tr>
+        <th>ID de producto</th>
+        <th>Cantidad</th>
+    </tr>
+    {{#each payload}}
+    <tr>
+        <td>{{this.pid}}</td>
+        <td>{{this.quantity}}</td>
+    </tr>
+    {{/each}}
+</table>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>{{ title }}</title>
+</head>
+
+<body>
+    <main class="container">
+        {{{body}}}
+    </main>
+</body>
+
+</html>
+<script>
+    const button = document.querySelector("#add-cart");
+
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "bottom-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: function (toast) {
+            toast.addEventListener("mouseenter", Swal.stopTimer);
+            toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+    });
+
+    button.addEventListener('click', function () {
+        console.log(button.id)
+        handleClick(button._id);
+    });
+    
+    async function handleClick (_pid) {
+        fetch("http://localhost:8080/api/carts/product", {
+            method: "POST", // Agrega el método HTTP correcto, por ejemplo, POST
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                cid: "b3346053-1f9f-4cd7-9570-cc590540c221",
+                pid: _pid
+            })
+        })
+            .then(function(data) {
+                Toast.fire({
+                    icon: "success",
+                    title: "Producto agregado al carrito.",
+                });
+            })
+            .catch(function (error) {
+                console.error("Error:", error);
+            });
+    };
+</script>
