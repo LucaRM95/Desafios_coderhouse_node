@@ -18,7 +18,7 @@ export const cartExist = async (
     cart = await cartManager.getCart(cid);
   }
 
-  if (cart === null) {
+  if (cart === null || cart === undefined) {
     return res.status(404).json({
       message: "No se ha encontrado un carrito con el id proporcionado.",
     });

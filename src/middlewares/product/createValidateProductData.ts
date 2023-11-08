@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import ProductsManager from "../classes/products/ProductsManager";
-import { ProductModel } from "../interfaces/ProductModel";
+import ProductsManager from "../../classes/products/ProductsManager";
+import { ProductModel } from "../../interfaces/ProductModel";
 
 const productManager = new ProductsManager();
 
@@ -13,7 +13,7 @@ export  const createValidateProductData = async (
   const products = await productManager.getProducts();
   const { code, title, description, price, stock, category } = req.body;
 
-  const isCodeExists = products.find((product: ProductModel) => product.code === code)
+  const isCodeExists = products?.payload.find((product: ProductModel) => product.code === code)
     ? true
     : false;
 

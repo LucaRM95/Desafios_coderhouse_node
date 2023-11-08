@@ -13,19 +13,42 @@ cartRouter.get("/:cid", cartExist, async (req: Request, res: Response) => {
     return res.status(404).json({ message: "El carrito que intentas buscar no existe." });
   }
 
-  res.status(200).json(query_res);
+  return res.status(200).json(query_res);
 });
 
 cartRouter.post("/", async (req: Request, res: Response) => {
   const message = await cartManager.createCart();
-  res.status(201).json(message);
+  return res.status(201).json(message);
 });
 
 cartRouter.post("/product", cartExist, async (req: Request, res: Response) => {
   const { cid, pid } = req.body;
-  const query_res = await cartManager.addProduct(cid, pid);
+  await cartManager.addProduct(cid, pid);
 
-  res.status(200).json({ message: `Producto agregado al carrito ${cid}` });
+  return res.status(200).json({ message: `Producto agregado al carrito ${cid}` });
 })
+
+cartRouter.put("/products", cartExist, async ( req: Request, res: Response) => {
+  const { cid, pid, quantity } = req.body;
+  const response = await cartManager.updateQuantity(cid, pid, quantity);
+
+  return res.status(response?.status || 200).json({ message: response?.message });
+});
+
+cartRouter.put("/:cid", cartExist, async ( req: Request, res: Response ) => {
+  const cid = req.params.cid;
+  const products = req.body;
+  const response = await cartManager.updateProducts(cid, products);
+
+  return res.status(response?.status || 200).json({message: response?.message});
+});
+
+
+cartRouter.delete("/products", cartExist, async ( req: Request, res: Response ) => {
+  const { cid, pid } = req.body;
+  const cart = await cartManager.deleteProduct(cid, pid);
+
+  return res.status(200).json(cart);
+});
 
 export default cartRouter;

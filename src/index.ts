@@ -1,7 +1,7 @@
 import express, { Express, Request, Response, urlencoded } from "express";
 import dotenv from "dotenv";
 import productsRouter from "./routes/products/ProductsRoutes";
-import cartRouter from "./routes/cart/CartRoutes";
+import cartRouter from "./routes/cart/cartRoutes";
 
 dotenv.config();
 
