@@ -1,24 +1,29 @@
 import { ProductModel } from "../../interfaces/ProductModel";
-import Product from "../../models/products/Products";
+import Product from "../../models/products/Products.model";
+import buildResponse from "../../helpers/buildResponse";
 
 class ProductsManager {
-  private products: Array<ProductModel>;
-
-  constructor() {
-    this.products = [];
-  }
-
   async addProduct(product: ProductModel) {
     Product.insertMany(product);
   }
 
-  async getProducts() {
-    await this.loadProducts();
-    if (this.products.length > 0) {
-      return this.products;
-    } else {
-      return [];
-    }
+  async getProducts(
+    limitParam: any = 10,
+    pageNumber: any = 1,
+    sortParam: any = 0,
+    criteria: any = {}
+  ) {
+    const options = {
+      limit: limitParam,
+      page: pageNumber,
+      sort:
+        sortParam == 1 || sortParam == -1 ? { price: sortParam } : {},
+    };
+    const criteriaParsed = (criteria && criteria !== '{}') ? {} : JSON.parse(criteria);
+
+    const response = await Product?.paginate(criteriaParsed, options );
+    const newResponse = buildResponse(response);
+    return newResponse;
   }
 
   async getProductByID(id: string) {
@@ -56,16 +61,8 @@ class ProductsManager {
     const res = await Product.deleteOne({
       $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
     });
-    return res.deletedCount;
-  }
 
-  private async loadProducts() {
-    try {
-      this.products = await Product.find();
-    } catch (error) {
-      this.products = [];
-      return { message: error };
-    }
+    return res.deletedCount;
   }
 }
 

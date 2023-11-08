@@ -2,27 +2,22 @@ import express, { IRouter, Request, Response } from "express";
 import ProductsManager from "../../classes/products/ProductsManager";
 import { ProductModel } from "../../interfaces/ProductModel";
 import { v4 as uuidv4 } from "uuid";
-import { createValidateProductData } from "../../middlewares/createValidateProductData";
-import { updateValidateProductData } from "../../middlewares/updateValidateProductData";
+import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
+import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
 
 const productManager = new ProductsManager();
 const productsRouter: IRouter = express.Router();
 
 productsRouter.get("/products", async (req: Request, res: Response) => {
-  const limitParam = req.query.limit;
-  const allProducts = await productManager.getProducts();
+  const { limit, page, sort, criteria } = req.query;
 
-  if(allProducts.length === 0){
+  const allProducts = await productManager.getProducts(limit, page, sort, criteria);
+
+  if(allProducts?.payload.length === 0){
     return res.status(404).json({ message: "No hay productos en la base de datos." })
   }
-  const limit =
-    typeof limitParam === "string"
-      ? parseInt(limitParam, 10) || allProducts.length
-      : allProducts.length;
 
-  const limitedProducts = allProducts.slice(0, limit);
-
-  res.status(200).json(limitedProducts);
+  res.status(200).json(allProducts);
 });
 
 productsRouter.get("/product/:pid", async (req: Request, res: Response) => {

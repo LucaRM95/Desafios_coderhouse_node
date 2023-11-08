@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import ProductsManager from "../classes/products/ProductsManager";
-import { ProductModel } from "../interfaces/ProductModel";
+import ProductsManager from "../../classes/products/ProductsManager";
+import { ProductModel } from "../../interfaces/ProductModel";
 
 const productManager = new ProductsManager();
 
@@ -19,7 +19,9 @@ export const updateValidateProductData = async (
       .json({ message: "El campo id no se puede modificar." });
   }
 
-  if (code !== undefined) {
+  const exists = await productManager.getProductByID(code);
+
+  if (code !== exists?.code) {
     return res
       .status(400)
       .json({ message: "El campo código no se puede modificar." });
