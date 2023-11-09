@@ -5,7 +5,7 @@ import { ProductModel } from "../../interfaces/ProductModel";
 const Schema = mongoose.Schema;
 
 const productModel = new Schema({
-    _id: String,
+    _id: { type: String, required: true },
     code: String,
     status: Boolean,
     title: String,

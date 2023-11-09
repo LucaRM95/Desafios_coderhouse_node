@@ -47,7 +47,9 @@ productsRouter.get("/product/:pid", async (req: Request, res: Response) => {
           message: `El producto con id ${pid} no existe en la base de datos`,
         });
     }
-    return res.json(query_res);
+    console.log(query_res)
+    //return res.status(200).json(query_res);
+    res.render('product', query_res);
   } catch (err) {
     return res.status(500).json({ message: "Error al obtener el producto" });
   }

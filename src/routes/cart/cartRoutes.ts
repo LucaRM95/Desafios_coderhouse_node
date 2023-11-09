@@ -8,13 +8,18 @@ const cartManager = new CartManager();
 
 cartRouter.get("/:cid", cartExist, async (req: Request, res: Response) => {
   const cid = req.params.cid;
-  const query_res: any = await cartManager.getCart(cid);
+  try {
+    const query_res: any = await cartManager.getCart(cid);
 
-  if(query_res === null){
-    return res.status(404).json({ message: "El carrito que intentas buscar no existe." });
+    if (query_res === null) {
+      return res.status(404).json({ message: "El carrito que intentas buscar no existe." });
+    }
+
+    res.render('cart', { payload: query_res.products.map((d: any) => d.toJSON()) });
+  } catch (error) {
+    console.error("Error in cartRouter:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
-  //return res.status(200).json(query_res);
-  res.render('cart', { payload: query_res.products.map((d: any) => d) })
 });
 
 cartRouter.post("/", async (req: Request, res: Response) => {

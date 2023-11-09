@@ -1,9 +1,9 @@
 export interface CartProduct {
-    pid: string;
-    quantity: number;
+    pid: String;
+    quantity: Number;
 }
 
 export interface CartModel {
-    cid: string;
+    _id: { type: String, required: true };
     products: Array<CartProduct>;
 }

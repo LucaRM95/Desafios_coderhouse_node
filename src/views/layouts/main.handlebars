@@ -33,13 +33,12 @@
     });
 
     button.addEventListener('click', function () {
-        console.log(button.id)
         handleClick(button._id);
     });
     
     async function handleClick (_pid) {
         fetch("http://localhost:8080/api/carts/product", {
-            method: "POST", // Agrega el método HTTP correcto, por ejemplo, POST
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },

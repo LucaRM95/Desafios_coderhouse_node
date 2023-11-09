@@ -8,9 +8,25 @@ const productManager = new ProductsManager();
 
 class CartManager {
   async getCart(cid: string) {
-    const res = Cart.findById({ _id: cid });
-
-    return res;
+    try {
+      const res = await Cart.findById(cid).exec();
+  
+      if (!res) {
+        return null;
+      }
+  
+      // Realizar la población directamente sobre el array de productos
+      const populatedProducts = await Cart.populate(res, {
+        path: 'products.pid',
+        model: 'Product',
+        select: 'title description category thumbnail price',
+      });
+  
+      return populatedProducts;
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      throw error;
+    }
   }
 
   async createCart() {
