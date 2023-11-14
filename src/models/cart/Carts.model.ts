@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const cartModel = new Schema({
+const cartSchema = new Schema({
   _id: { type: String, required: true },
   products: [{
     pid: String,
@@ -10,6 +10,6 @@ const cartModel = new Schema({
   }],
 });
 
-const Cart = mongoose.model("Cart", cartModel);
+const Cart = mongoose.model("Cart", cartSchema);
 
 export default Cart;

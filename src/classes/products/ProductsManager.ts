@@ -1,5 +1,5 @@
-import { ProductModel } from "../../interfaces/ProductModel";
-import Product from "../../models/products/Products.model";
+import { ProductModel } from "../../interfaces/ProductInterface";
+import Product from "../../models/products/products.model";
 import buildResponse from "../../helpers/buildResponse";
 
 class ProductsManager {

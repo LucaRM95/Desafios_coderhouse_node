@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import ProductsManager from "../../classes/products/ProductsManager";
-import { ProductModel } from "../../interfaces/ProductModel";
+import { ProductModel } from "../../interfaces/ProductInterface";
 
 const productManager = new ProductsManager();
 

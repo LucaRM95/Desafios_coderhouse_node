@@ -1,8 +1,8 @@
 import { v4 as uuid } from "uuid";
 import ProductsManager from "../products/ProductsManager";
-import Cart from "../../models/cart/Carts.model";
-import { ProductModel } from "../../interfaces/ProductModel";
-import { CartModel, CartProduct } from "../../interfaces/CartModel";
+import Cart from "../../models/cart/carts.model";
+import { ProductModel } from "../../interfaces/ProductInterface";
+import { CartModel, CartProduct } from "../../interfaces/CartInterface";
 
 const productManager = new ProductsManager();
 

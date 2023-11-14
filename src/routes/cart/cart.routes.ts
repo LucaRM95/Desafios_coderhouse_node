@@ -1,12 +1,12 @@
 import express, { IRouter, Request, Response } from "express";
 import CartManager from "../../classes/cart/CartManager";
-import { cartExist } from "../../middlewares/cartExist";
-import { CartModel } from "../../interfaces/CartModel";
+import { cartExist } from "../../middlewares/cart/cartExist";
+import { privateRouter } from "../../middlewares/auth/privateRoutes";
 
 const cartRouter: IRouter = express.Router();
 const cartManager = new CartManager();
 
-cartRouter.get("/:cid", cartExist, async (req: Request, res: Response) => {
+cartRouter.get("/:cid", cartExist, privateRouter, async (req: Request, res: Response) => {
   const cid = req.params.cid;
   try {
     const query_res: any = await cartManager.getCart(cid);

@@ -1,10 +1,10 @@
 import mongoose, { PaginateModel } from "mongoose";
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { ProductModel } from "../../interfaces/ProductModel";
+import { ProductModel } from "../../interfaces/ProductInterface";
 
 const Schema = mongoose.Schema;
 
-const productModel = new Schema({
+const productSchema = new Schema({
     _id: { type: String, required: true },
     code: String,
     status: Boolean,
@@ -16,8 +16,8 @@ const productModel = new Schema({
     stock: Number,
 });
 
-productModel.plugin(mongoosePaginate);
+productSchema.plugin(mongoosePaginate);
 
-const Product = mongoose.model<ProductModel, PaginateModel<ProductModel>>('Product', productModel);
+const Product = mongoose.model<ProductModel, PaginateModel<ProductModel>>('Product', productSchema);
 
 export default Product;

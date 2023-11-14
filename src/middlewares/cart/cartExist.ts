@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import CartManager from "../classes/cart/CartManager";
+import CartManager from "../../classes/cart/CartManager";
 
 const cartManager = new CartManager();
 

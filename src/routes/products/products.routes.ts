@@ -1,14 +1,15 @@
 import express, { IRouter, Request, Response } from "express";
 import ProductsManager from "../../classes/products/ProductsManager";
-import { ProductModel } from "../../interfaces/ProductModel";
+import { ProductModel } from "../../interfaces/ProductInterface";
 import { v4 as uuidv4 } from "uuid";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
+import { privateRouter } from "../../middlewares/auth/privateRoutes";
 
 const productManager = new ProductsManager();
 const productsRouter: IRouter = express.Router();
 
-productsRouter.get("/products", async (req: Request, res: Response) => {
+productsRouter.get("/products", privateRouter, async (req: Request, res: Response) => {
   const { limit, page, sort, criteria } = req.query;
 
   const allProducts = await productManager.getProducts(
@@ -35,7 +36,7 @@ productsRouter.get("/products", async (req: Request, res: Response) => {
   });
 });
 
-productsRouter.get("/product/:pid", async (req: Request, res: Response) => {
+productsRouter.get("/product/:pid", privateRouter, async (req: Request, res: Response) => {
   const pid = req.params.pid;
 
   try {
