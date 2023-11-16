@@ -1,5 +1,5 @@
 import express, { IRouter, Request, Response } from "express";
-import ProductsManager from "../../classes/products/ProductsManager";
+import ProductsManager from "../../dao/products/ProductsManager";
 import { ProductModel } from "../../interfaces/ProductInterface";
 import { v4 as uuidv4 } from "uuid";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
@@ -25,8 +25,11 @@ productsRouter.get("/products", privateRouter, async (req: Request, res: Respons
       .json({ message: "No hay productos en la base de datos." });
   }
   // res.status(200).json(allProducts);
+  console.log(req.session)
   res.render("products", {
     title: "Productos",
+    user: req.session, 
+    role: req.session,
     payload: allProducts.payload.map((d: any) => d.toJSON()),
     page: allProducts.page,
     prevLink: allProducts.prevLink,
@@ -48,8 +51,6 @@ productsRouter.get("/product/:pid", privateRouter, async (req: Request, res: Res
           message: `El producto con id ${pid} no existe en la base de datos`,
         });
     }
-    console.log(query_res)
-    //return res.status(200).json(query_res);
     res.render('product', query_res);
   } catch (err) {
     return res.status(500).json({ message: "Error al obtener el producto" });

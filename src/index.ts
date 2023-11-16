@@ -16,7 +16,7 @@ const app: Express = express();
 
 app.use(
   expressSession({
-    secret: process.env.SESSION_SECRET || "",
+    secret: "qBvPkU2X;J1,51Z!~2p[JW.DT|g:4l@",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
