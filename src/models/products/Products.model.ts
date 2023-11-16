@@ -1,6 +1,6 @@
 import mongoose, { PaginateModel } from "mongoose";
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { ProductModel } from "../../interfaces/ProductInterface";
+import { ProductModel } from "../../services/interfaces/ProductInterface";
 
 const Schema = mongoose.Schema;
 

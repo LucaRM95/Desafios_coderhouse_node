@@ -1,12 +1,12 @@
 import { v4 as uuid } from "uuid";
-import ProductsManager from "../products/ProductsManager";
+import ProductsManager from "../products/ProductsController";
 import Cart from "../../models/cart/carts.model";
-import { ProductModel } from "../../interfaces/ProductInterface";
-import { CartModel, CartProduct } from "../../interfaces/CartInterface";
+import { ProductModel } from "../../services/interfaces/ProductInterface";
+import { CartModel, CartProduct } from "../../services/interfaces/CartInterface";
 
 const productManager = new ProductsManager();
 
-class CartManager {
+class CartController {
   async getCart(cid: string) {
     try {
       const res = await Cart.findById(cid).exec();
@@ -176,4 +176,4 @@ class CartManager {
   }
 }
 
-export default CartManager;
+export default CartController;

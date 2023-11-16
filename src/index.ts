@@ -7,7 +7,7 @@ import indexRouter from './routes/index.routes';
 import express, { Express, Request, Response, urlencoded } from "express";
 import productsRouter from "./routes/products/products.routes";
 import cartRouter from "./routes/cart/cart.routes";
-import { __dirname } from "./helpers/utils";
+import { __dirname } from "./services/helpers/utils";
 import userRouter from "./routes/users/user.routes";
 
 dotenv.config();

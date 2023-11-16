@@ -1,18 +1,18 @@
 import express, { IRouter, Request, Response } from "express";
-import ProductsManager from "../../dao/products/ProductsManager";
-import { ProductModel } from "../../interfaces/ProductInterface";
+import ProductsController from "../../controllers/products/ProductsController";
+import { ProductModel } from "../../services/interfaces/ProductInterface";
 import { v4 as uuidv4 } from "uuid";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
 import { privateRouter } from "../../middlewares/auth/privateRoutes";
 
-const productManager = new ProductsManager();
+const productController = new ProductsController();
 const productsRouter: IRouter = express.Router();
 
 productsRouter.get("/products", privateRouter, async (req: Request, res: Response) => {
   const { limit, page, sort, criteria } = req.query;
 
-  const allProducts = await productManager.getProducts(
+  const allProducts = await productController.getProducts(
     limit,
     page,
     sort,
@@ -43,7 +43,7 @@ productsRouter.get("/product/:pid", privateRouter, async (req: Request, res: Res
   const pid = req.params.pid;
 
   try {
-    const query_res = await productManager.getProductByID(pid);
+    const query_res = await productController.getProductByID(pid);
     if (query_res === null) {
       return res
         .status(404)
@@ -82,7 +82,7 @@ productsRouter.post(
       price,
       stock,
     };
-    productManager.addProduct(newProduct);
+    productController.addProduct(newProduct);
     res
       .status(201)
       .json({ message: "Producto agregado correctamente.", newProduct });
@@ -109,7 +109,7 @@ productsRouter.put(
     };
 
     try {
-      const query_res = await productManager.updateProduct(pid, newProduct);
+      const query_res = await productController.updateProduct(pid, newProduct);
       if (query_res === null) {
         return res
           .status(404)
@@ -139,7 +139,7 @@ productsRouter.delete("/product/:pid", async (req: Request, res: Response) => {
       .json({ messsage: "Es necesario el id para eliminar un producto." });
   }
 
-  const rta = await productManager.deleteProduct(id);
+  const rta = await productController.deleteProduct(id);
   if (rta !== 1) {
     return res.status(404).json({
       message:

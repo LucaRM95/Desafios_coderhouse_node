@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import CartManager from "../../dao/cart/CartManager";
+import CartManager from "../../controllers/cart/CartController";
 
 const cartManager = new CartManager();
 
