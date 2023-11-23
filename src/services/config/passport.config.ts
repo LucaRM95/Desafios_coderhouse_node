@@ -80,7 +80,7 @@ export const init = () => {
       githubOpts,
       async (accessToken: any, refreshToken: any, profile: any, done: any) => {
         let email = profile._json.email;
-
+        console.log(profile)
         try {
           let user: any = await User.findOne({ email });
           if (user) {
@@ -91,7 +91,7 @@ export const init = () => {
             first_name: profile._json.name,
             last_name: "",
             email,
-            role: "Github",
+            role: profile._json.type,
             age: 18,
             password: "",
           };
