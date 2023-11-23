@@ -1,5 +1,4 @@
 import path from "path";
-import dotenv from "dotenv";
 import MongoStore from "connect-mongo";
 import { engine } from "express-handlebars";
 import expressSession from "express-session";
@@ -9,8 +8,8 @@ import productsRouter from "./routes/products/products.routes";
 import cartRouter from "./routes/cart/cart.routes";
 import { __dirname } from "./services/helpers/utils";
 import userRouter from "./routes/users/user.routes";
-
-dotenv.config();
+import { init as initPassport } from './services/config/passport.config';
+import passport from "passport";
 
 const app: Express = express();
 
@@ -38,6 +37,10 @@ app.set("view engine", "handlebars");
 app.get("/", (req: Request, res: Response) => {
   res.status(200).redirect("api/products");
 });
+
+initPassport();
+
+app.use(passport.initialize());
 
 app.use('/', indexRouter);
 app.use("/auth", userRouter);

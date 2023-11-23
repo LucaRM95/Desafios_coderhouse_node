@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
 import { privateRouter } from "../../middlewares/auth/privateRoutes";
+import { authMiddleware } from "../../services/helpers/utils";
 
 const productController = new ProductsController();
 const productsRouter: IRouter = express.Router();
@@ -25,7 +26,6 @@ productsRouter.get("/products", privateRouter, async (req: Request, res: Respons
       .json({ message: "No hay productos en la base de datos." });
   }
   // res.status(200).json(allProducts);
-  console.log(req.session)
   res.render("products", {
     title: "Productos",
     user: req.session, 

@@ -11,7 +11,7 @@ export const init = async () => {
     await mongoose.connect(URI);
     console.log('Database conected 🚀');
   } catch (error) {
-    console.log('Ah ocurrido un error al intentar conectarnos a la DB', error);
+    console.log('Ha ocurrido un error al intentar conectarnos a la DB', error);
   }
 }
 

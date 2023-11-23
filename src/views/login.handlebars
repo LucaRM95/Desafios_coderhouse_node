@@ -1,13 +1,13 @@
 <main class="container">
-  <form action="/auth/login" method="post">
+  <form id="login-form" action="/auth/login" method="POST">
     <header>
       <h1>Login</h1>
     </header>
     {{#if message}}
       <p style="color: crimson;">{{message}}</p>
     {{/if}}
-    <input type="email" name="email" placeholder="Correo" required />
-    <input type="password" name="password" placeholder="Contraseña" required />
+    <input id="email-input" type="email" name="email" placeholder="Correo" required />
+    <input id="password-input" type="password" name="password" placeholder="Contraseña" required />
     <footer>
       <input type="submit" value="Enviar">
       <a href="http://localhost:8080/register">¿No tienes cuenta? Registrate</a>
