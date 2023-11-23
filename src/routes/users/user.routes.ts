@@ -34,6 +34,13 @@ userRouter.post("/login", passport.authenticate('login', { failureRedirect: '/lo
     .redirect("/api/products?limit=2&page=1");
 });
 
+userRouter.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+
+userRouter.get('/github/callback', passport.authenticate('github', { failureRedirect: '/login' }), (req, res) => {
+  (req.session as any).user = req.user;
+  res.redirect('/api/products?limit=2&page=1');
+})
+
 userRouter.post(
   "/register",
   passport.authenticate('register', { failureRedirect: '/register' }),
