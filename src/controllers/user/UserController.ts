@@ -17,6 +17,10 @@ class UserController {
 
   static async loginUser(email: string, pass: string) {
     const userFinded: UserModel | any = await User.findOne({ email: email });
+
+    if (!userFinded) {
+      return { status: 400, message: ("La contraseña o correo son invalidos.") };
+    }
     const isValidPassword = validatePass(pass, userFinded);
 
     if (!isValidPassword) {
