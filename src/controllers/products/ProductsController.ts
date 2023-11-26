@@ -1,8 +1,8 @@
-import { ProductModel } from "../../interfaces/ProductModel";
-import Product from "../../models/products/Products.model";
-import buildResponse from "../../helpers/buildResponse";
+import { ProductModel } from "../../services/interfaces/ProductInterface";
+import Product from "../../models/products/products.model";
+import buildResponse from "../../services/helpers/buildResponse";
 
-class ProductsManager {
+class ProductsController {
   async addProduct(product: ProductModel) {
     Product.insertMany(product);
   }
@@ -66,4 +66,4 @@ class ProductsManager {
   }
 }
 
-export default ProductsManager;
+export default ProductsController;

@@ -1,4 +1,4 @@
-import { ProductModel } from "../interfaces/ProductModel";
+import { ProductModel } from "../interfaces/ProductInterface";
 
 const buildResponse = ( data: any ) => {
     return {

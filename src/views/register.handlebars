@@ -1,0 +1,19 @@
+<section>
+  <form action="/auth/register" method="post">
+    <header>
+      <h1>Registro</h1>
+    </header>
+    {{#if message}}
+      <p style="color: crimson;">{{message}}</p>
+    {{/if}}
+    <input type="text" name="first_name" placeholder="Nombre" required />
+    <input type="text" name="last_name" placeholder="Apellido" required />
+    <input type="email" name="email" placeholder="Correo" required />
+    <input type="number" name="age" placeholder="Edad" required />
+    <input type="password" name="password" placeholder="Contraseña" required />
+    <footer>
+      <input type="submit" value="Enviar">
+      <a href="http://localhost:8080/login">¿Ya tienes una cuenta? Logueate</a>
+    </footer>
+  </form>
+</section>

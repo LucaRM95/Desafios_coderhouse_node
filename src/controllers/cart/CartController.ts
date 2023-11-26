@@ -1,16 +1,32 @@
 import { v4 as uuid } from "uuid";
-import ProductsManager from "../products/ProductsManager";
-import Cart from "../../models/cart/Carts.model";
-import { ProductModel } from "../../interfaces/ProductModel";
-import { CartModel, CartProduct } from "../../interfaces/CartModel";
+import ProductsManager from "../products/ProductsController";
+import Cart from "../../models/cart/carts.model";
+import { ProductModel } from "../../services/interfaces/ProductInterface";
+import { CartModel, CartProduct } from "../../services/interfaces/CartInterface";
 
 const productManager = new ProductsManager();
 
-class CartManager {
+class CartController {
   async getCart(cid: string) {
-    const res = Cart.findById({ _id: cid });
-
-    return res;
+    try {
+      const res = await Cart.findById(cid).exec();
+  
+      if (!res) {
+        return null;
+      }
+  
+      // Realizar la población directamente sobre el array de productos
+      const populatedProducts = await Cart.populate(res, {
+        path: 'products.pid',
+        model: 'Product',
+        select: 'title description category thumbnail price',
+      });
+  
+      return populatedProducts;
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      throw error;
+    }
   }
 
   async createCart() {
@@ -160,4 +176,4 @@ class CartManager {
   }
 }
 
-export default CartManager;
+export default CartController;

@@ -1,6 +1,9 @@
 import http from 'http';
 import app from './index';
+import dotenv from "dotenv";
 import { init } from './db/mongoose';
+
+dotenv.config();
 
 init();
 
