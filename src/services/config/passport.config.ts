@@ -5,6 +5,8 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GithubStrategy } from "passport-github2";
 import { hashPass, validatePass } from "../helpers/utils";
 import User from "../../models/user/user.models";
+import { UserModel } from "../interfaces/UserInterface";
+import UserController from "../../controllers/user/UserController";
 
 const JWT_SECRET: string = process.env.JWT_SECRET || "";
 
@@ -36,10 +38,19 @@ export const init = () => {
         if (user) {
           return done(new Error("User already register 😨"));
         }
-        const newUser = await User.create({
+        const newUser: UserModel = {
           ...req.body,
+          _id: uuidv4(),
+          role: "USER",
           password: hashPass(password),
-        });
+        };
+    
+        const result = await UserController.registerUser(newUser);
+    
+        if (result.status !== 201) {
+          return { message: result.message };
+        }
+
         done(null, newUser);
       } catch (error: any) {
         done(

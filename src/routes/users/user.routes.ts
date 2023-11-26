@@ -45,20 +45,7 @@ userRouter.post(
   "/register",
   passport.authenticate('register', { failureRedirect: '/register' }),
   async (req: Request, res: Response) => {
-    const { body } = req;
-    const user: UserModel = {
-      ...body,
-      _id: uuidv4(),
-      role: "USER",
-      password: hashPass(body?.password),
-    };
-
-    const result = await UserController.registerUser(user);
-
-    if (result.status !== 201) {
-      return res.render("register", { message: result.message });
-    }
-
+    const user: UserModel | any = req?.user;
     (req.session as any).user = {
       first_name: user?.first_name,
       last_name: user?.last_name,
