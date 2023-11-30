@@ -1,73 +1,66 @@
 import express, { IRouter, Request, Response } from "express";
-import { UserModel } from "../../services/interfaces/UserInterface";
-import { hashPass, tokenGenerator } from "../../services/helpers/utils";
+import { tokenGenerator } from "../../services/helpers/auth/token_helpers";
+import { passport_login, passport_register } from "../../services/helpers/auth/passport_function";
 import { validateRegisterData } from "../../middlewares/auth/validateRegisterData";
-import UserController from "../../controllers/user/UserController";
-import { v4 as uuidv4 } from "uuid";
-import passport from "passport";
 
 const userRouter: IRouter = express.Router();
 
-userRouter.post("/login", passport.authenticate('login', { failureRedirect: '/login' }), async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  const result = await UserController.loginUser(email, password);
-
-  if (result.status !== 200) {
-    return res.render("login", { message: result.message });
-  }
-
-  (req.session as any).user = {
-    first_name: result.userFinded?.first_name,
-    last_name: result.userFinded?.last_name,
-    role: result.userFinded?.role,
-    email,
-  };
-
-  const token = tokenGenerator(result.userFinded);
-
-  return res
-    .cookie("access_token", token, {
-      maxAge: 60000,
-      httpOnly: true,
-    })
-    .redirect("/api/products?limit=2&page=1");
-});
-
-userRouter.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
-
-userRouter.get('/github/callback', passport.authenticate('github', { failureRedirect: '/login' }), (req, res) => {
-  (req.session as any).user = req.user;
-  res.redirect('/api/products?limit=2&page=1');
-})
+const cookieOpts = {
+  maxAge: 2 * 60 * 60 * 1000,
+  httpOnly: true,
+  signed: true,
+};
 
 userRouter.post(
-  "/register",
-  passport.authenticate('register', { failureRedirect: '/register' }),
+  "/login",
+  passport_login,
   async (req: Request, res: Response) => {
-    const user: UserModel | any = req?.user;
-    (req.session as any).user = {
-      first_name: user?.first_name,
-      last_name: user?.last_name,
-      role: user?.role,
-      email: user?.email,
-    };
+    try {
+      const { user, result }: any = req.body;
+      
+      if(!user){
+        return res.status(401).json(result);
+      }
 
-    const token = tokenGenerator((req.session as any).user);
+      const token = tokenGenerator(user);
 
-    return res
-      .cookie("access_token", token, {
-        maxAge: 60000,
-        httpOnly: true,
-      })
-      .redirect("/api/products?limit=2&page=1");
+      return res
+        .cookie("access_token", token, cookieOpts)
+        .status(200)
+        .json(result);
+    } catch (error) {
+      return res.status(500).json({ status: 500, message: "Internal Server Error" });
+    }
   }
 );
 
-userRouter.get("/logout", (req, res) => {
-  req.session.destroy((error) => {
-    return res.redirect("/login");
-  });
+userRouter.post(
+  "/register",
+  validateRegisterData,
+  passport_register,
+  async (req: Request, res: Response) => {
+    try {
+      const { result, newUser }: any = req.body;
+
+      if(!newUser){
+        return res.status(401).json(result);
+      }
+  
+      const token = tokenGenerator(newUser);
+  
+      return res
+        .cookie("access_token", token, cookieOpts)
+        .status(201)
+        .json(result);
+    } catch (error) {
+      return res.status(500).json({ status: 500, message: "Internal Server Error" });
+    }
+  }
+);
+
+userRouter.get("/logout", (req: Request, res: Response) => {
+  res.clearCookie("access_token");
+  return res.status(200).json({ status: 200, message: 'Cookie cleared successfully.' });
 });
 
 export default userRouter;

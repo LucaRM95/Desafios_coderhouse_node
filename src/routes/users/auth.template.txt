@@ -1,0 +1,6 @@
+userRouter.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+
+userRouter.get('/github/callback', passport.authenticate('github', { failureRedirect: '/login' }), (req, res) => {
+  (req.session as any).user = req.user;
+  res.redirect('/api/products?limit=2&page=1');
+});

@@ -1,64 +1,61 @@
-import express, { IRouter, Request, Response } from "express";
-import ProductsController from "../../controllers/products/ProductsController";
-import { ProductModel } from "../../services/interfaces/ProductInterface";
+import passport from "passport";
 import { v4 as uuidv4 } from "uuid";
+import express, { IRouter, Request, Response } from "express";
+import { authPolicies } from "../../services/helpers/auth/auth_policies";
+import { ProductModel } from "../../services/interfaces/ProductInterface";
+import ProductsController from "../../controllers/products/ProductsController";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
-import { privateRouter } from "../../middlewares/auth/privateRoutes";
-import { authMiddleware } from "../../services/helpers/utils";
 
 const productController = new ProductsController();
 const productsRouter: IRouter = express.Router();
 
-productsRouter.get("/products", privateRouter, async (req: Request, res: Response) => {
-  const { limit, page, sort, criteria } = req.query;
+productsRouter.get(
+  "/products",
+  passport.authenticate('jwt', { session: false }),
+  async (req: Request, res: Response) => {
+    const { limit, page, sort, criteria } = req.query;
 
-  const allProducts = await productController.getProducts(
-    limit,
-    page,
-    sort,
-    criteria
-  );
+    const allProducts = await productController.getProducts(
+      limit,
+      page,
+      sort,
+      criteria
+    );
 
-  if (allProducts?.payload.length === 0) {
-    return res
-      .status(404)
-      .json({ message: "No hay productos en la base de datos." });
-  }
-  // res.status(200).json(allProducts);
-  res.render("products", {
-    title: "Productos",
-    user: req.session, 
-    role: req.session,
-    payload: allProducts.payload.map((d: any) => d.toJSON()),
-    page: allProducts.page,
-    prevLink: allProducts.prevLink,
-    hasPrevPage: allProducts.hasPrevPage,
-    nextLink:  allProducts.nextLink,
-    hasNextPage: allProducts.hasNextPage
-  });
-});
-
-productsRouter.get("/product/:pid", privateRouter, async (req: Request, res: Response) => {
-  const pid = req.params.pid;
-
-  try {
-    const query_res = await productController.getProductByID(pid);
-    if (query_res === null) {
+    if (allProducts?.payload.length === 0) {
       return res
         .status(404)
-        .json({
-          message: `El producto con id ${pid} no existe en la base de datos`,
-        });
+        .json({ message: "Doesn't exists products in database." });
     }
-    res.render('product', query_res);
-  } catch (err) {
-    return res.status(500).json({ message: "Error al obtener el producto" });
+    res.status(200).json(allProducts);
   }
-});
+);
+
+productsRouter.get(
+  "/product/:pid",
+  passport.authenticate('jwt', { session: false }),
+  async (req: Request, res: Response) => {
+    const pid = req.params.pid;
+
+    try {
+      const query_res = await productController.getProductByID(pid);
+      if (query_res === null) {
+        return res.status(404).json({
+          message: `The product with id ${pid} doesn't exists in the database.`,
+        });
+      }
+      res.status(200).json(query_res);
+    } catch (err) {
+      return res.status(500).json({ message: "Error trying to obtain one product." });
+    }
+  }
+);
 
 productsRouter.post(
   "/product",
+  passport.authenticate('jwt', { session: false }),
+  authPolicies(["ADMIN"], "add"),
   createValidateProductData,
   async (req: Request, res: Response) => {
     const {
@@ -85,12 +82,14 @@ productsRouter.post(
     productController.addProduct(newProduct);
     res
       .status(201)
-      .json({ message: "Producto agregado correctamente.", newProduct });
+      .json({ message: "Product has been added successfully.", newProduct });
   }
 );
 
 productsRouter.put(
   "/product/:pid",
+  passport.authenticate('jwt', { session: false }),
+  authPolicies(["ADMIN"], "edit"),
   updateValidateProductData,
   async (req: Request, res: Response) => {
     const body: ProductModel = req.body;
@@ -111,44 +110,45 @@ productsRouter.put(
     try {
       const query_res = await productController.updateProduct(pid, newProduct);
       if (query_res === null) {
-        return res
-          .status(404)
-          .json({
-            message: `El producto con id ${pid} no existe en la base de datos`,
-          });
+        return res.status(404).json({
+          message: `The product with id ${pid} doesn't exists in database.`,
+        });
       }
       return res
         .status(200)
-        .json({ message: "Producto actualizado corretamente." });
+        .json({ message: "Product has been updated successfully." });
     } catch (err) {
-      return res
-        .status(500)
-        .json({
-          message: "Ocurrió un error al intentar actualizar el producto.",
-        });
+      return res.status(500).json({
+        message: "An error occurred to try update one product.",
+      });
     }
   }
 );
 
-productsRouter.delete("/product/:pid", async (req: Request, res: Response) => {
-  const id: string | number = req.params.pid;
+productsRouter.delete(
+  "/product/:pid",
+  passport.authenticate('jwt', { session: false }),
+  authPolicies(["ADMIN"], "delete"),
+  async (req: Request, res: Response) => {
+    const id: string | number = req.params.pid;
 
-  if (!id) {
+    if (!id) {
+      return res
+        .status(400)
+        .json({ messsage: "The id is necessary to delete the product." });
+    }
+
+    const rta = await productController.deleteProduct(id);
+    if (rta !== 1) {
+      return res.status(404).json({
+        message:
+          "The product to trying to delete doesn't exists in database.",
+      });
+    }
     return res
-      .status(400)
-      .json({ messsage: "Es necesario el id para eliminar un producto." });
+      .status(200)
+      .json({ message: "The product was deleted successfully." });
   }
-
-  const rta = await productController.deleteProduct(id);
-  if (rta !== 1) {
-    return res.status(404).json({
-      message:
-        "El producto que desea eliminar no se encuentra en la base de datos",
-    });
-  }
-  return res
-    .status(200)
-    .json({ message: "El producto fue eliminado existosamente." });
-});
+);
 
 export = productsRouter;

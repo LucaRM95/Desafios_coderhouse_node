@@ -9,7 +9,8 @@ const userSchema = new Schema<UserModel>({
   last_name: String,
   email: { type: String, unique: true },
   age: Number,
-  role: String,
+  cart: Number,
+  role: { type: String, default: 'USER', enum: ['USER', 'ADMIN'] },
   password: String,
 }, { timestamps: true });
 

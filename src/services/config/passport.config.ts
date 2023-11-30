@@ -1,42 +1,45 @@
 import passport from "passport";
 import { Request } from "express";
 import { v4 as uuidv4 } from "uuid";
-import { Strategy as LocalStrategy } from "passport-local";
-import { Strategy as GithubStrategy } from "passport-github2";
-import { hashPass, validatePass } from "../helpers/utils";
 import User from "../../models/user/user.models";
 import { UserModel } from "../interfaces/UserInterface";
+import { hashPass, validatePass } from "../helpers/auth/auth_helpers";
+import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
 import UserController from "../../controllers/user/UserController";
+import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
+import coookieExtractor from "../helpers/cookies/cookieExtractor";
 
 const JWT_SECRET: string = process.env.JWT_SECRET || "";
-
-function cookieExtractor(req: Request) {
-  let token = null;
-  if (req && req.cookies) {
-    token = req.cookies.access_token;
-  }
-  return token;
-}
 
 const opts: any = {
   usernameField: "email",
   passReqToCallback: true,
 };
 
-const githubOpts: any = {
-  clientID: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  callbackURL: process.env.CALLBACK_URL,
+const jwtOptions: any = {
+  jwtFromRequest: ExtractJwt.fromExtractors([
+    coookieExtractor,
+    // ExtractJwt.fromHeader('Authorization'),
+    // ExtractJwt.fromAuthHeaderAsBearerToken(),
+  ]),
+  secretOrKey: JWT_SECRET,
 };
 
 export const init = () => {
   passport.use(
     "register",
-    new LocalStrategy(opts, async (req, email, password, done) => {
+    new LocalStrategy(opts, async (req: Request, email, password, done) => {
       try {
-        const user = await User.findOne({ email });
+        const user = await UserController.findOneUser(email, "REGISTER");
+        
         if (user) {
-          return done(new Error("User already register 😨"));
+          return done(
+            null,
+            {
+              result: { status: 401, message: "User already register." },
+            },
+            undefined
+          );
         }
         const newUser: UserModel = {
           ...req.body,
@@ -44,19 +47,19 @@ export const init = () => {
           role: "USER",
           password: hashPass(password),
         };
-    
+
         const result = await UserController.registerUser(newUser);
-    
+
         if (result.status !== 201) {
           return { message: result.message };
         }
-
-        done(null, newUser);
+        done(null, {
+          result: result ? result : undefined,
+          newUser: newUser ? newUser : undefined,
+        });
       } catch (error: any) {
         done(
-          new Error(
-            `Ocurrio un error durante la autenticacion ${error.message} 😨.`
-          )
+          new Error(`An error occurred during authentication ${error.message}.`)
         );
       }
     })
@@ -64,56 +67,32 @@ export const init = () => {
 
   passport.use(
     "login",
-    new LocalStrategy(opts, async (req, email, password, done) => {
+    new LocalStrategy(opts, async (req: Request, email, password, done) => {
       try {
-        const user = await User.findOne({ email });
-        if (!user) {
-          return done(new Error("Correo o contraseña invalidos 😨"));
+        const result = await UserController.loginUser(email, password);
+
+        if (result.status !== 200) {
+          return done(null, { result, user: undefined });
         }
-        const isPassValid = validatePass(password, user);
-        if (!isPassValid) {
-          return done(new Error("Correo o contraseña invalidos 😨"));
-        }
-        done(null, user);
+        const user: UserModel | any = UserController.findOneUser(email);
+
+        done(null, {
+          result: result ? result : undefined,
+          user: user ? user : undefined,
+        });
       } catch (error: any) {
         done(
-          new Error(
-            `Ocurrio un error durante la autenticacion ${error.message} 😨.`
-          )
+          new Error(`An error occurred during authentication ${error.message}.`)
         );
       }
     })
   );
 
   passport.use(
-    "github",
-    new GithubStrategy(
-      githubOpts,
-      async (accessToken: any, refreshToken: any, profile: any, done: any) => {
-        let email = profile._json.email;
-        console.log(profile)
-        try {
-          let user: any = await User.findOne({ email });
-          if (user) {
-            return done(null, user);
-          }
-          user = {
-            _id: uuidv4(),
-            first_name: profile._json.name,
-            last_name: "",
-            email,
-            role: profile._json.type,
-            age: 18,
-            password: "",
-          };
-          const newUser = await User.create(user);
-          done(null, newUser);
-        } catch (err) {
-          console.error("Error during GitHub authentication:", err);
-          done(err, null);
-        }
-      }
-    )
+    "jwt",
+    new JWTStrategy(jwtOptions, (payload, done) => {
+      return done(null, payload);
+    })
   );
 
   passport.serializeUser((user: any, done) => {
