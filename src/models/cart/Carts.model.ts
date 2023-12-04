@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+import { CartModel } from "../../services/interfaces/CartInterface";
 
 const Schema = mongoose.Schema;
 
-const cartSchema = new Schema({
+const cartSchema = new Schema<CartModel>({
   _id: { type: String, required: true },
+  uid: { type: String },
   products: [{
     pid: String,
     quantity: Number

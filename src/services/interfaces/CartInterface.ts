@@ -5,5 +5,6 @@ export interface CartProduct {
 
 export interface CartModel {
     _id: { type: String, required: true };
+    uid: { type: String },
     products: Array<CartProduct>;
 }

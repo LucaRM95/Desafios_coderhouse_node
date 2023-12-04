@@ -21,9 +21,9 @@ userRouter.post(
       if(!user){
         return res.status(401).json(result);
       }
-
-      const token = tokenGenerator(user);
-
+      
+      const token = tokenGenerator(req.body.user);
+      
       return res
         .cookie("access_token", token, cookieOpts)
         .status(200)

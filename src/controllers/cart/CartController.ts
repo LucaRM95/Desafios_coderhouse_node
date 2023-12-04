@@ -30,9 +30,13 @@ class CartController {
   }
 
   async createCart() {
-    await Cart.insertMany({ _id: uuid(), products: [] });
-
-    return { message: "Carrito creado correctamente" };
+    const cart: CartModel | any = await Cart.create({ _id: uuid(), products: [] });
+    
+    if(!cart){
+      return { status: 400, message: "Ocurrió un error al intentar crear el carrito." }
+    }
+    
+    return { status: 201, message: "Carrito creado correctamente", cid: cart._id };
   }
 
   async addProduct(cid: string, pid: string) {

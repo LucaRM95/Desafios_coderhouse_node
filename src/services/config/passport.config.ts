@@ -1,15 +1,17 @@
 import passport from "passport";
 import { Request } from "express";
 import { v4 as uuidv4 } from "uuid";
+import env from "../config/dotenv.config"
 import User from "../../models/user/user.models";
 import { UserModel } from "../interfaces/UserInterface";
-import { hashPass, validatePass } from "../helpers/auth/auth_helpers";
-import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
+import { hashPass } from "../helpers/auth/auth_helpers";
+import { Strategy as LocalStrategy } from "passport-local";
+import { verifyToken } from "../helpers/auth/token_helpers";
+import coookieExtractor from "../helpers/cookies/cookieExtractor";
 import UserController from "../../controllers/user/UserController";
 import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
-import coookieExtractor from "../helpers/cookies/cookieExtractor";
 
-const JWT_SECRET: string = process.env.JWT_SECRET || "";
+const JWT_SECRET: string = env.JWT_SECRET || "";
 
 const opts: any = {
   usernameField: "email",
@@ -17,11 +19,7 @@ const opts: any = {
 };
 
 const jwtOptions: any = {
-  jwtFromRequest: ExtractJwt.fromExtractors([
-    coookieExtractor,
-    // ExtractJwt.fromHeader('Authorization'),
-    // ExtractJwt.fromAuthHeaderAsBearerToken(),
-  ]),
+  jwtFromRequest: ExtractJwt.fromExtractors([coookieExtractor]),
   secretOrKey: JWT_SECRET,
 };
 
@@ -74,7 +72,7 @@ export const init = () => {
         if (result.status !== 200) {
           return done(null, { result, user: undefined });
         }
-        const user: UserModel | any = UserController.findOneUser(email);
+        const user: UserModel | any = await UserController.findOneUser(email);
 
         done(null, {
           result: result ? result : undefined,
@@ -90,8 +88,18 @@ export const init = () => {
 
   passport.use(
     "jwt",
-    new JWTStrategy(jwtOptions, (payload, done) => {
-      return done(null, payload);
+    new JWTStrategy(jwtOptions, async (payload, done) => {
+      try {
+        const user = await User.findById(payload.id);
+        
+        if (!user) {
+          return done(null, false, { message: "User not found" });
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error, false, { message: "Error authenticating user" });
+      }
     })
   );
 

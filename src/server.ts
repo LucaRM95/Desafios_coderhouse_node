@@ -1,13 +1,11 @@
 import http from 'http';
 import app from './index';
-import dotenv from "dotenv";
 import { init } from './db/mongoose';
-
-dotenv.config();
+import env from './services/config/dotenv.config'
 
 init();
 
-const port = process.env.PORT;
+const port = env.PORT;
 const server = http.createServer(app);
 
 server.listen(port, () => {

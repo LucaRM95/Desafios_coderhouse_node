@@ -3,7 +3,7 @@ export interface UserModel {
   first_name: string;
   last_name: string;
   email: { type: String; unique: true };
-  cart: Number;
+  cid: { type: String };
   age: Number;
   role: string;
   password: string;

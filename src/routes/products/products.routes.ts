@@ -1,8 +1,8 @@
-import passport from "passport";
 import { v4 as uuidv4 } from "uuid";
 import express, { IRouter, Request, Response } from "express";
 import { authPolicies } from "../../services/helpers/auth/auth_policies";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
+import { passport_jwt } from "../../services/helpers/auth/passport_function";
 import ProductsController from "../../controllers/products/ProductsController";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
@@ -12,7 +12,7 @@ const productsRouter: IRouter = express.Router();
 
 productsRouter.get(
   "/products",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   async (req: Request, res: Response) => {
     const { limit, page, sort, criteria } = req.query;
 
@@ -34,7 +34,7 @@ productsRouter.get(
 
 productsRouter.get(
   "/product/:pid",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   async (req: Request, res: Response) => {
     const pid = req.params.pid;
 
@@ -54,7 +54,7 @@ productsRouter.get(
 
 productsRouter.post(
   "/product",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   authPolicies(["ADMIN"], "add"),
   createValidateProductData,
   async (req: Request, res: Response) => {
@@ -88,7 +88,7 @@ productsRouter.post(
 
 productsRouter.put(
   "/product/:pid",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   authPolicies(["ADMIN"], "edit"),
   updateValidateProductData,
   async (req: Request, res: Response) => {
@@ -127,7 +127,7 @@ productsRouter.put(
 
 productsRouter.delete(
   "/product/:pid",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   authPolicies(["ADMIN"], "delete"),
   async (req: Request, res: Response) => {
     const id: string | number = req.params.pid;

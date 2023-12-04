@@ -1,10 +1,9 @@
-import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import env from "../../config/dotenv.config"
 import { UserModel } from "../../interfaces/UserInterface";
 
-dotenv.config();
 
-const JWT_SECRET: string = process.env.JWT_SECRET || "";
+const JWT_SECRET: string = env.JWT_SECRET || "";
 
 export const tokenGenerator = (user: UserModel) => {
   const { _id, first_name, last_name, email }: UserModel = user;
@@ -14,6 +13,7 @@ export const tokenGenerator = (user: UserModel) => {
     last_name,
     email,
   };
+
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
 };
 

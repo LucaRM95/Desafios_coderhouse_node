@@ -2,13 +2,18 @@ import passport from "passport";
 import { cartExist } from "../../middlewares/cart/cartExist";
 import express, { IRouter, Request, Response } from "express";
 import CartController from "../../controllers/cart/CartController";
+import { passport_jwt } from "../../services/helpers/auth/passport_function";
+import UserController from "../../controllers/user/UserController";
+import { user_cart } from "../../middlewares/cart/user_cart";
 
 const cartRouter: IRouter = express.Router();
 const cartController = new CartController();
 
 cartRouter.get(
   "/:cid",
+  passport_jwt,
   cartExist,
+  user_cart,
   passport.authenticate('jwt', { session: false }),
   async (req: Request, res: Response) => {
     const cid = req.params.cid;
@@ -21,8 +26,9 @@ cartRouter.get(
           .json({ message: "The cart you trying to find doesn't exists." });
       }
 
-      res.render("cart", {
-        payload: query_res.products.map((d: any) => d.toJSON()),
+      res.status(200).json({
+        status: 200,
+        payload: query_res,
       });
     } catch (error) {
       console.error("Error in cartRouter:", error);
@@ -33,16 +39,24 @@ cartRouter.get(
 
 cartRouter.post(
   "/",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   async (req: Request, res: Response) => {
-    const message = await cartController.createCart();
-    return res.status(201).json(message);
+    const { _id }: any = req.user
+
+    const result = await cartController.createCart();
+    const updateUser = await UserController.findAndAsociateCart( _id, result.cid );
+    console.log(result)
+    if(updateUser.status !== 200){
+      return res.status(400).json({ status: 400, message: "Ocurrió un error al intentar asociar al usuario con el carrito." });
+    }
+
+    return res.status(201).json({ status: result.status, message: result.message });
   }
 );
 
 cartRouter.post(
   "/product",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid } = req.body;
@@ -70,7 +84,7 @@ cartRouter.put(
 
 cartRouter.put(
   "/:cid",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   cartExist,
   async (req: Request, res: Response) => {
     const cid = req.params.cid;
@@ -85,7 +99,7 @@ cartRouter.put(
 
 cartRouter.delete(
   "/products",
-  passport.authenticate('jwt', { session: false }),
+  passport_jwt,
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid } = req.body;

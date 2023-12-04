@@ -9,7 +9,7 @@ const userSchema = new Schema<UserModel>({
   last_name: String,
   email: { type: String, unique: true },
   age: Number,
-  cart: Number,
+  cid: { type: String },
   role: { type: String, default: 'USER', enum: ['USER', 'ADMIN'] },
   password: String,
 }, { timestamps: true });

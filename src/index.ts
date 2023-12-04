@@ -5,25 +5,27 @@ import expressSession from "express-session";
 import cartRouter from "./routes/cart/cart.routes";
 import userRouter from "./routes/users/user.routes";
 import productsRouter from "./routes/products/products.routes";
+import env  from "./services/config/dotenv.config";
 import { init as initPassport } from './services/config/passport.config';
 import express, { Express, Request, Response, urlencoded } from "express";
+import sessionRouter from "./routes/sessions/session.routes";
 
 const app: Express = express();
 
 app.use(
   expressSession({
-    secret: process.env.JWT_SECRET || "",
+    secret: env.SESSION_SECRET || "",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: process.env.URI,
+      mongoUrl: env.URI,
       mongoOptions: {},
       ttl: 2 * 60 * 60 * 1000,
     }),
   })
 );
 
-app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser(env.COOKIE_SECRET || ""));
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
 
@@ -38,6 +40,7 @@ app.use(passport.initialize());
 app.use("/auth", userRouter);
 app.use("/api", productsRouter);
 app.use("/api/carts", cartRouter);
+app.use("/api/sessions", sessionRouter);
 
 //Middleware para manejar páginas no encontradas (404)
 app.use((req, res) => {

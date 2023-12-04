@@ -1,10 +1,7 @@
 import mongoose from 'mongoose';
+import env from '../services/config/dotenv.config'
 
-const USER = process.env.USER;
-const PASSWORD = process.env.PASSWORD;
-const database = "ecommerce";
-
-const URI=`mongodb+srv://${USER}:${PASSWORD}@cluster0.khrlasb.mongodb.net/${database}`;
+const URI=env.URI || "";
 
 export const init = async () => {
   try {
