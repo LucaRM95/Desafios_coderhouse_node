@@ -6,12 +6,13 @@ import { UserModel } from "../../interfaces/UserInterface";
 const JWT_SECRET: string = env.JWT_SECRET || "";
 
 export const tokenGenerator = (user: UserModel) => {
-  const { _id, first_name, last_name, email }: UserModel = user;
+  const { _id, first_name, last_name, email, cid }: UserModel = user;
   const payload = {
     id: _id,
     first_name,
     last_name,
     email,
+    cid
   };
 
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });

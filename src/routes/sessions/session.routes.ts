@@ -6,15 +6,20 @@ const sessionRouter: IRouter = express.Router();
 
 sessionRouter.get("/", async (req: Request, res: Response) => {
     const token = coookieExtractor(req);
-    const current_session = await verifyToken(token)
 
-    console.log(token)
-    console.log(current_session)
+    if(!token){
+        return res.status(404).json({
+            status: 200,
+            message: "Don't exits any session. Please trying to login."
+        });
+    }
+
+    const current_session = await verifyToken(token)
 
     return res.status(200).json({
         status: 200,
         user: current_session
-    })
+    });
 })
 
 export default sessionRouter;
