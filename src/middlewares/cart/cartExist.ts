@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import CartManager from "../../controllers/cart/CartController";
-
-const cartManager = new CartManager();
+import CartController from "../../controllers/cart/CartController";
 
 export const cartExist = async (
   req: Request,
@@ -13,9 +11,9 @@ export const cartExist = async (
   const param_cid = req.params.cid;
 
   if (cid === undefined) {
-    cart = await cartManager.getCart(param_cid);
+    cart = await CartController.getCart(param_cid);
   } else {
-    cart = await cartManager.getCart(cid);
+    cart = await CartController.getCart(cid);
   }
 
   if (cart === null || cart === undefined) {

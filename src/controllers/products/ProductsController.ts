@@ -3,11 +3,11 @@ import Product from "../../models/products/products.model";
 import buildResponse from "../../services/helpers/buildResponse";
 
 class ProductsController {
-  async addProduct(product: ProductModel) {
+  static async addProduct(product: ProductModel) {
     Product.insertMany(product);
   }
 
-  async getProducts(
+  static async getProducts(
     limitParam: any = 10,
     pageNumber: any = 1,
     sortParam: any = 0,
@@ -26,7 +26,7 @@ class ProductsController {
     return newResponse;
   }
 
-  async getProductByID(id: string) {
+  static async getProductByID(id: string) {
     const res = Product.findOne({
       $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
     });
@@ -34,7 +34,7 @@ class ProductsController {
     return res;
   }
 
-  async updateProduct(
+  static async updateProduct(
     id: string | number,
     updatedProduct: Partial<ProductModel>
   ) {
@@ -57,7 +57,7 @@ class ProductsController {
     return res;
   }
 
-  async deleteProduct(id: string | number) {
+  static async deleteProduct(id: string | number) {
     const res = await Product.deleteOne({
       $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
     });

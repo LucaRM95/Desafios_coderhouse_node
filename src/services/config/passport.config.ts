@@ -6,9 +6,9 @@ import User from "../../models/user/user.models";
 import { UserModel } from "../interfaces/UserInterface";
 import { hashPass } from "../helpers/auth/auth_helpers";
 import { Strategy as LocalStrategy } from "passport-local";
-import { verifyToken } from "../helpers/auth/token_helpers";
 import coookieExtractor from "../helpers/cookies/cookieExtractor";
 import UserController from "../../controllers/user/UserController";
+import CartController from "../../controllers/cart/CartController";
 import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
 
 const JWT_SECRET: string = env.JWT_SECRET || "";
@@ -73,6 +73,11 @@ export const init = () => {
           return done(null, { result, user: undefined });
         }
         const user: UserModel | any = await UserController.findOneUser(email);
+
+        if(user.cid === undefined){
+          const cart = await CartController.createCart();
+          await UserController.findAndAsociateCart( user._id, cart.cid );
+        }
 
         done(null, {
           result: result ? result : undefined,

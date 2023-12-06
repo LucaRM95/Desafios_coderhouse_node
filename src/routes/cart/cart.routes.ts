@@ -7,7 +7,6 @@ import UserController from "../../controllers/user/UserController";
 import { user_cart } from "../../middlewares/cart/user_cart";
 
 const cartRouter: IRouter = express.Router();
-const cartController = new CartController();
 
 cartRouter.get(
   "/:cid",
@@ -18,7 +17,7 @@ cartRouter.get(
   async (req: Request, res: Response) => {
     const cid = req.params.cid;
     try {
-      const query_res: any = await cartController.getCart(cid);
+      const query_res: any = await CartController.getCart(cid);
 
       if (query_res === null) {
         return res
@@ -43,9 +42,9 @@ cartRouter.post(
   async (req: Request, res: Response) => {
     const { _id }: any = req.user
 
-    const result = await cartController.createCart();
+    const result = await CartController.createCart();
     const updateUser = await UserController.findAndAsociateCart( _id, result.cid );
-    console.log(result)
+    
     if(updateUser.status !== 200){
       return res.status(400).json({ status: 400, message: "Ocurrió un error al intentar asociar al usuario con el carrito." });
     }
@@ -60,7 +59,7 @@ cartRouter.post(
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid } = req.body;
-    await cartController.addProduct(cid, pid);
+    await CartController.addProduct(cid, pid);
 
     return res
       .status(200)
@@ -74,7 +73,7 @@ cartRouter.put(
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid, quantity } = req.body;
-    const response = await cartController.updateQuantity(cid, pid, quantity);
+    const response = await CartController.updateQuantity(cid, pid, quantity);
 
     return res
       .status(response?.status || 200)
@@ -89,7 +88,7 @@ cartRouter.put(
   async (req: Request, res: Response) => {
     const cid = req.params.cid;
     const products = req.body;
-    const response = await cartController.updateProducts(cid, products);
+    const response = await CartController.updateProducts(cid, products);
 
     return res
       .status(response?.status || 200)
@@ -103,7 +102,7 @@ cartRouter.delete(
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid } = req.body;
-    const cart = await cartController.deleteProduct(cid, pid);
+    const cart = await CartController.deleteProduct(cid, pid);
 
     return res.status(200).json(cart);
   }

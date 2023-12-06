@@ -7,7 +7,6 @@ import ProductsController from "../../controllers/products/ProductsController";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
 
-const productController = new ProductsController();
 const productsRouter: IRouter = express.Router();
 
 productsRouter.get(
@@ -16,7 +15,7 @@ productsRouter.get(
   async (req: Request, res: Response) => {
     const { limit, page, sort, criteria } = req.query;
 
-    const allProducts = await productController.getProducts(
+    const allProducts = await ProductsController.getProducts(
       limit,
       page,
       sort,
@@ -39,7 +38,7 @@ productsRouter.get(
     const pid = req.params.pid;
 
     try {
-      const query_res = await productController.getProductByID(pid);
+      const query_res = await ProductsController.getProductByID(pid);
       if (query_res === null) {
         return res.status(404).json({
           message: `The product with id ${pid} doesn't exists in the database.`,
@@ -79,7 +78,7 @@ productsRouter.post(
       price,
       stock,
     };
-    productController.addProduct(newProduct);
+    ProductsController.addProduct(newProduct);
     res
       .status(201)
       .json({ message: "Product has been added successfully.", newProduct });
@@ -108,7 +107,7 @@ productsRouter.put(
     };
 
     try {
-      const query_res = await productController.updateProduct(pid, newProduct);
+      const query_res = await ProductsController.updateProduct(pid, newProduct);
       if (query_res === null) {
         return res.status(404).json({
           message: `The product with id ${pid} doesn't exists in database.`,
@@ -138,7 +137,7 @@ productsRouter.delete(
         .json({ messsage: "The id is necessary to delete the product." });
     }
 
-    const rta = await productController.deleteProduct(id);
+    const rta = await ProductsController.deleteProduct(id);
     if (rta !== 1) {
       return res.status(404).json({
         message:

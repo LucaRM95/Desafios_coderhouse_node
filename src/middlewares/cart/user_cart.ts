@@ -4,8 +4,6 @@ import UserController from "../../controllers/user/UserController";
 import coookieExtractor from "../../services/helpers/cookies/cookieExtractor";
 import { verifyToken } from "../../services/helpers/auth/token_helpers";
 
-const cartController = new CartController();
-
 export const user_cart = async (
   req: Request,
   res: Response,
@@ -20,10 +18,10 @@ export const user_cart = async (
   const parsed_token: any = await verifyToken(user_token);
 
   if (cid === undefined) {
-    cart = await cartController.getCart(param_cid);
+    cart = await CartController.getCart(param_cid);
     userFinded = await UserController.findUserByCart(param_cid);
   } else {
-    cart = await cartController.getCart(cid);
+    cart = await CartController.getCart(cid);
     userFinded = await UserController.findUserByCart(cid);
   }
 

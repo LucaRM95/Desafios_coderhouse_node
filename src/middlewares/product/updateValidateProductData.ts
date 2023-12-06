@@ -2,8 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import ProductsManager from "../../controllers/products/ProductsController";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
 
-const productManager = new ProductsManager();
-
 // Middleware de validación de datos del producto
 export const updateValidateProductData = async (
   req: Request,
@@ -19,7 +17,7 @@ export const updateValidateProductData = async (
       .json({ message: "El campo id no se puede modificar." });
   }
 
-  const exists = await productManager.getProductByID(code);
+  const exists = await ProductsManager.getProductByID(code);
 
   if (code !== exists?.code) {
     return res

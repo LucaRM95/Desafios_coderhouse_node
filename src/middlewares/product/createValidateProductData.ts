@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import ProductsManager from "../../controllers/products/ProductsController";
+import ProductsController from "../../controllers/products/ProductsController";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
-
-const productManager = new ProductsManager();
 
 // Middleware de validación de datos del producto
 export  const createValidateProductData = async (
@@ -10,7 +8,7 @@ export  const createValidateProductData = async (
   res: Response,
   next: NextFunction
 ) => {
-  const products = await productManager.getProducts();
+  const products = await ProductsController.getProducts();
   const { code, title, description, price, stock, category } = req.body;
 
   const isCodeExists = products?.payload.find((product: ProductModel) => product.code === code)

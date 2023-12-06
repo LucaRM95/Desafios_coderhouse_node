@@ -4,10 +4,8 @@ import Cart from "../../models/cart/carts.model";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
 import { CartModel, CartProduct } from "../../services/interfaces/CartInterface";
 
-const productManager = new ProductsManager();
-
 class CartController {
-  async getCart(cid: string) {
+  static async getCart(cid: string) {
     try {
       const res = await Cart.findById(cid).exec();
   
@@ -29,7 +27,7 @@ class CartController {
     }
   }
 
-  async createCart() {
+  static async createCart() {
     const cart: CartModel | any = await Cart.create({ _id: uuid(), products: [] });
     
     if(!cart){
@@ -39,8 +37,8 @@ class CartController {
     return { status: 201, message: "Carrito creado correctamente", cid: cart._id };
   }
 
-  async addProduct(cid: string, pid: string) {
-    const products = await productManager.getProducts();
+  static async addProduct(cid: string, pid: string) {
+    const products = await ProductsManager.getProducts();
     const productFinded = products?.payload.find(
       (product: ProductModel) => product._id === pid
     );
@@ -69,7 +67,7 @@ class CartController {
     }
   }
 
-  async updateQuantity(cid: string, _pid: string, quantity: number) {
+  static async updateQuantity(cid: string, _pid: string, quantity: number) {
     const cart: CartModel | null = await Cart.findById(cid);
 
     const productFinded = cart?.products.find((product: CartProduct) => product.pid === _pid);
@@ -91,9 +89,9 @@ class CartController {
     return { status: 200, message: "Cantidad actualizada correctamente." };
   }
 
-  async updateProducts(cid: string, products: any) {
+  static async updateProducts(cid: string, products: any) {
     const productosEnviados = [...products];
-    const productsArray = await productManager.getProducts();
+    const productsArray = await ProductsManager.getProducts();
 
     let productosEncontrados = [];
 
@@ -166,7 +164,7 @@ class CartController {
     };
   }
 
-  async deleteProduct(cid: string, _pid: string) {
+  static async deleteProduct(cid: string, _pid: string) {
     const cart = await Cart.findOne({ _id: cid, "products.pid": _pid });
 
     if (cart) {
