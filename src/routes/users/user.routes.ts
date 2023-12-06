@@ -45,7 +45,7 @@ userRouter.post(
       if(!newUser){
         return res.status(401).json(result);
       }
-  
+      
       const token = tokenGenerator(newUser);
   
       return res

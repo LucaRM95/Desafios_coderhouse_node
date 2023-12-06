@@ -1,5 +1,7 @@
 import passport from "passport";
 import { NextFunction, Request, Response } from "express";
+import UserController from "../../../controllers/user/UserController";
+import CartController from "../../../controllers/cart/CartController";
 
 export const passport_login = (
   req: Request,
@@ -10,6 +12,12 @@ export const passport_login = (
     if (err !== null) {
       return res.status(401).json(err);
     }
+    
+    if(body.user.cid === undefined){
+      const cart = await CartController.createCart();
+      await UserController.findAndAsociateCart( body.user._id, cart.cid );
+    }
+
     if (!body) {
       return res
         .status(info?.status || 401)
@@ -26,10 +34,16 @@ export const passport_register = (
   res: Response,
   next: NextFunction
 ) => {
-  passport.authenticate("register", (err: any, body: any, info: any) => {
+  passport.authenticate("register", async (err: any, body: any, info: any) => {
     if (err !== null) {
       return res.status(401).json(err);
     }
+    
+    if(body.newUser.cid === undefined){
+      const cart = await CartController.createCart();
+      await UserController.findAndAsociateCart( body.newUser._id, cart.cid );
+    }
+
     if (!body) {
       return res
         .status(info?.status || 401)

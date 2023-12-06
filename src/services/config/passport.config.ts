@@ -74,11 +74,6 @@ export const init = () => {
         }
         const user: UserModel | any = await UserController.findOneUser(email);
 
-        if(user.cid === undefined){
-          const cart = await CartController.createCart();
-          await UserController.findAndAsociateCart( user._id, cart.cid );
-        }
-
         done(null, {
           result: result ? result : undefined,
           user: user ? user : undefined,
