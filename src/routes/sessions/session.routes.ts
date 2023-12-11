@@ -1,25 +1,20 @@
 import express, { IRouter, Request, Response } from "express";
 import coookieExtractor from "../../services/helpers/cookies/cookieExtractor";
 import { verifyToken } from "../../services/helpers/auth/token_helpers";
+import SessionController from "../../controllers/session/SessionController";
 
 const sessionRouter: IRouter = express.Router();
 
 sessionRouter.get("/", async (req: Request, res: Response) => {
-    const token = coookieExtractor(req);
+  const session = await SessionController.currentSession(req);
 
-    if(!token){
-        return res.status(404).json({
-            status: 200,
-            message: "Don't exits any session. Please trying to login."
-        });
-    }
+  return res.status(session?.status).json(session);
+});
 
-    const current_session = await verifyToken(token)
+sessionRouter.get("/logout", async (req: Request, res: Response) => {
+  const logout_res = await SessionController.logoutSession(req, res);
 
-    return res.status(200).json({
-        status: 200,
-        user: current_session
-    });
-})
+  return res.status(logout_res?.status).json(logout_res);
+});
 
 export default sessionRouter;

@@ -1,7 +1,6 @@
 import passport from "passport";
 import { NextFunction, Request, Response } from "express";
 import UserController from "../../../controllers/user/UserController";
-import CartController from "../../../controllers/cart/CartController";
 
 export const passport_login = (
   req: Request,
@@ -9,13 +8,17 @@ export const passport_login = (
   next: NextFunction
 ) => {
   passport.authenticate("login", async (err: any, body: any, info: any) => {
+    const { email, password } = req.body;
     if (err !== null) {
       return res.status(401).json(err);
     }
-    
-    if(body.user.cid === undefined){
-      const cart = await CartController.createCart();
-      await UserController.findAndAsociateCart( body.user._id, cart.cid );
+
+    const result = await UserController.loginUser(email, password);
+    if (result.status !== 200) {
+      return res.status(result?.status).json({
+        status: result?.status,
+        message: result?.message
+      });
     }
 
     if (!body) {
@@ -23,7 +26,7 @@ export const passport_login = (
         .status(info?.status || 401)
         .json({ message: info?.message || "Authentication failed" });
     }
-    
+
     req.body = body;
     next();
   })(req, res, next);
@@ -37,11 +40,6 @@ export const passport_register = (
   passport.authenticate("register", async (err: any, body: any, info: any) => {
     if (err !== null) {
       return res.status(401).json(err);
-    }
-    
-    if(body.newUser.cid === undefined){
-      const cart = await CartController.createCart();
-      await UserController.findAndAsociateCart( body.newUser._id, cart.cid );
     }
 
     if (!body) {
@@ -59,11 +57,18 @@ export const passport_jwt = (
   res: Response,
   next: NextFunction
 ) => {
-  passport.authenticate("jwt", { session: false }, (err: any, payload: any, info: any) => {
-    if(!payload){
-      return res.status(401).json({ status: 401, message: "You're not authenticated to do this action." });
+  passport.authenticate(
+    "jwt",
+    { session: false },
+    (err: any, payload: any, info: any) => {
+      if (!payload) {
+        return res.status(401).json({
+          status: 401,
+          message: "You're not authenticated to do this action.",
+        });
+      }
+      req.user = payload;
+      next();
     }
-    req.user = payload
-    next();
-  })(req, res, next);
+  )(req, res, next);
 };

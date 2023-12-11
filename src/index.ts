@@ -9,6 +9,7 @@ import env  from "./services/config/dotenv.config";
 import { init as initPassport } from './services/config/passport.config';
 import express, { Express, Request, Response, urlencoded } from "express";
 import sessionRouter from "./routes/sessions/session.routes";
+import { passport_jwt } from "./services/helpers/auth/passport_function";
 
 const app: Express = express();
 
@@ -39,8 +40,8 @@ app.use(passport.initialize());
 
 app.use("/auth", userRouter);
 app.use("/api", productsRouter);
-app.use("/api/carts", cartRouter);
-app.use("/api/sessions", sessionRouter);
+app.use("/api/carts", passport_jwt, cartRouter);
+app.use("/sessions", sessionRouter);
 
 //Middleware para manejar páginas no encontradas (404)
 app.use((req, res) => {

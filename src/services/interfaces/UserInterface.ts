@@ -1,5 +1,5 @@
 export interface UserModel {
-  _id: { tpye: String, required: true };
+  _id: { tpye: String, required: true, unique: true };
   first_name: string;
   last_name: string;
   email: { type: String; unique: true };

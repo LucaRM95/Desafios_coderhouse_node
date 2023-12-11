@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 
 const cartSchema = new Schema<CartModel>({
   _id: { type: String, required: true },
-  uid: { type: String },
   products: [{
     pid: String,
     quantity: Number

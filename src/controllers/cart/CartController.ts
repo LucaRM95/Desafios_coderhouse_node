@@ -1,89 +1,63 @@
 import { v4 as uuid } from "uuid";
-import ProductsManager from "../products/ProductsController";
+import ProductsDao from "../../dao/products/ProductsDao";
 import Cart from "../../models/cart/carts.model";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
-import { CartModel, CartProduct } from "../../services/interfaces/CartInterface";
+import { CartModel } from "../../services/interfaces/CartInterface";
+import CartDao from "../../dao/cart/CartDao";
 
 class CartController {
   static async getCart(cid: string) {
-    try {
-      const res = await Cart.findById(cid).exec();
-  
-      if (!res) {
-        return null;
-      }
-  
-      // Realizar la población directamente sobre el array de productos
-      const populatedProducts = await Cart.populate(res, {
-        path: 'products.pid',
-        model: 'Product',
-        select: 'title description category thumbnail price',
-      });
-  
-      return populatedProducts;
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-      throw error;
-    }
+    const cart = await CartDao.getCart(cid);
+
+    return cart;
   }
 
   static async createCart() {
-    const cart: CartModel | any = await Cart.create({ _id: uuid(), products: [] });
-    
-    if(!cart){
-      return { status: 400, message: "Ocurrió un error al intentar crear el carrito." }
+    const cart: CartModel | any = await Cart.create({
+      _id: uuid(),
+      products: [],
+    });
+
+    if (!cart) {
+      return {
+        status: 400,
+        message: "Ocurrió un error al intentar crear el carrito.",
+      };
     }
-    
-    return { status: 201, message: "Carrito creado correctamente", cid: cart._id };
+
+    return {
+      status: 201,
+      message: "Carrito creado correctamente",
+      cid: cart._id,
+    };
   }
 
   static async addProduct(cid: string, pid: string) {
-    const products = await ProductsManager.getProducts();
+    const products = await ProductsDao.getProducts();
     const productFinded = products?.payload.find(
       (product: ProductModel) => product._id === pid
     );
 
     if (productFinded === undefined) {
       return {
+        status: 404,
         message:
           "El producto que intentas agregar no existe en la base de datos.",
       };
     }
 
-    const cart = await Cart.findOne({ _id: cid, "products.pid": pid });
+    await CartDao.addProduct(cid, pid);
 
-    if (cart) {
-      // Si el producto ya existe en el carrito, incrementa la cantidad
-      return await Cart.updateOne(
-        { _id: cid, "products.pid": pid },
-        { $inc: { "products.$.quantity": 1 } }
-      );
-    } else {
-      // Si el producto no existe en el carrito, agrégalo
-      return await Cart.updateOne(
-        { _id: cid },
-        { $push: { products: { pid, quantity: 1 } } }
-      );
-    }
+    return { status: 200, message: `Product has added to cart ${cid}.` };
   }
 
   static async updateQuantity(cid: string, _pid: string, quantity: number) {
-    const cart: CartModel | null = await Cart.findById(cid);
-
-    const productFinded = cart?.products.find((product: CartProduct) => product.pid === _pid);
-
-    if (productFinded === undefined) {
+    const res = await CartDao.updateQuantity(cid, _pid, quantity);
+    if (res.modifiedCount === 0) {
       return {
         status: 404,
-        message: "El producto que intentas agregar no esta en el carrito.",
+        message: "No existe producto o carrito para actualizar la cantidad.",
       };
-    }
-
-    if (cart) {
-      await Cart.updateOne(
-        { _id: cid, "products.pid": _pid },
-        { $inc: { "products.$.quantity": quantity } }
-      );
     }
 
     return { status: 200, message: "Cantidad actualizada correctamente." };
@@ -91,8 +65,8 @@ class CartController {
 
   static async updateProducts(cid: string, products: any) {
     const productosEnviados = [...products];
-    const productsArray = await ProductsManager.getProducts();
-
+    const productsArray = await ProductsDao.getProducts();
+   
     let productosEncontrados = [];
 
     for (const productoEnviado of productosEnviados) {
@@ -123,7 +97,7 @@ class CartController {
       },
     }));
 
-    const cart = await Cart.find({ _id: cid });
+    const cart: CartModel | any = await CartDao.getCart(cid);
 
     products.forEach((product: any) => {
       const found = bulkOps.find(
@@ -156,7 +130,7 @@ class CartController {
       }
     });
 
-    await Cart.bulkWrite(bulkOps);
+    await CartDao.updateProducts(bulkOps);
 
     return {
       status: 200,
@@ -165,16 +139,15 @@ class CartController {
   }
 
   static async deleteProduct(cid: string, _pid: string) {
-    const cart = await Cart.findOne({ _id: cid, "products.pid": _pid });
-
-    if (cart) {
-      await Cart.updateOne(
-        { _id: cid },
-        { $pull: { products: { pid: _pid } } }
-      );
-
-      return { message: "Se ha eliminado el producto del carrito." };
+    const deleted_product = await CartDao.deleteProduct(cid, _pid);
+    if (deleted_product.modifiedCount === 0) {
+      return {
+        status: 404,
+        message:
+          "El producto que deseas eliminar no existe o ya fue eliminado.",
+      };
     }
+    return { status: 200, message: "Se ha eliminado el producto del carrito." };
   }
 }
 

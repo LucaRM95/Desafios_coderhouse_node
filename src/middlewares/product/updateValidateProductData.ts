@@ -18,11 +18,11 @@ export const updateValidateProductData = async (
   }
 
   const exists = await ProductsManager.getProductByID(code);
-
-  if (code !== exists?.code) {
+  console.log(exists)
+  if (code === exists?.code) {
     return res
       .status(400)
-      .json({ message: "El campo código no se puede modificar." });
+      .json({ message: "El campo código no se puede modificar porque ya existe en otro producto." });
   }
 
   next();

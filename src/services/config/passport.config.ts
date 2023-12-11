@@ -8,8 +8,11 @@ import { hashPass } from "../helpers/auth/auth_helpers";
 import { Strategy as LocalStrategy } from "passport-local";
 import coookieExtractor from "../helpers/cookies/cookieExtractor";
 import UserController from "../../controllers/user/UserController";
+import UserDao from '../../dao/user/UserDao';
 import CartController from "../../controllers/cart/CartController";
 import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
+import CartDao from "../../dao/cart/CartDao";
+import { CartModel } from "../interfaces/CartInterface";
 
 const JWT_SECRET: string = env.JWT_SECRET || "";
 
@@ -39,10 +42,13 @@ export const init = () => {
             undefined
           );
         }
+        const cart: CartModel | any = await CartDao.createCart();
+        
         const newUser: UserModel = {
           ...req.body,
           _id: uuidv4(),
           role: "USER",
+          cid: cart?._id,
           password: hashPass(password),
         };
 
@@ -67,15 +73,9 @@ export const init = () => {
     "login",
     new LocalStrategy(opts, async (req: Request, email, password, done) => {
       try {
-        const result = await UserController.loginUser(email, password);
-
-        if (result.status !== 200) {
-          return done(null, { result, user: undefined });
-        }
         const user: UserModel | any = await UserController.findOneUser(email);
 
         done(null, {
-          result: result ? result : undefined,
           user: user ? user : undefined,
         });
       } catch (error: any) {

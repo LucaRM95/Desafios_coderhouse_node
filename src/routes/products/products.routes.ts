@@ -22,12 +22,7 @@ productsRouter.get(
       criteria
     );
 
-    if (allProducts?.payload.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Doesn't exists products in database." });
-    }
-    res.status(200).json(allProducts);
+    res.status(allProducts?.status).json(allProducts);
   }
 );
 

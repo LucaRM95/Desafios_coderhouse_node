@@ -10,101 +10,85 @@ const cartRouter: IRouter = express.Router();
 
 cartRouter.get(
   "/:cid",
-  passport_jwt,
-  cartExist,
   user_cart,
-  passport.authenticate('jwt', { session: false }),
+  cartExist,
   async (req: Request, res: Response) => {
     const cid = req.params.cid;
     try {
       const query_res: any = await CartController.getCart(cid);
 
-      if (query_res === null) {
-        return res
-          .status(404)
-          .json({ message: "The cart you trying to find doesn't exists." });
-      }
-
       res.status(200).json({
         status: 200,
         payload: query_res,
       });
-    } catch (error) {
-      console.error("Error in cartRouter:", error);
-      res.status(500).json({ message: "Server internal error." });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: `Server Internal Error: ${error?.message}.` });
     }
   }
 );
 
-cartRouter.post(
-  "/",
-  passport_jwt,
-  async (req: Request, res: Response) => {
-    const { _id }: any = req.user
-
-    const result = await CartController.createCart();
-    const updateUser = await UserController.findAndAsociateCart( _id, result.cid );
-    
-    if(updateUser.status !== 200){
-      return res.status(400).json({ status: 400, message: "Ocurrió un error al intentar asociar al usuario con el carrito." });
-    }
-
-    return res.status(201).json({ status: result.status, message: result.message });
-  }
-);
+cartRouter.post("/", async (req: Request, res: Response) => {
+  const result = await CartController.createCart();
+  
+  return res
+    .status(201)
+    .json({ status: result.status, message: result.message });
+});
 
 cartRouter.post(
   "/product",
-  passport_jwt,
+  user_cart,
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid } = req.body;
-    await CartController.addProduct(cid, pid);
+    const result: any = await CartController.addProduct(cid, pid);
 
     return res
-      .status(200)
-      .json({ message: `Product has added to cart ${cid}.` });
+      .status(result?.status)
+      .json({ message: result?.message });
   }
 );
 
 cartRouter.put(
   "/products",
-  passport.authenticate('jwt', { session: false }),
+  user_cart,
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid, quantity } = req.body;
-    const response = await CartController.updateQuantity(cid, pid, quantity);
+    const response: any = await CartController.updateQuantity(cid, pid, quantity);
 
     return res
-      .status(response?.status || 200)
+      .status(response?.status)
       .json({ message: response?.message });
   }
 );
 
 cartRouter.put(
   "/:cid",
-  passport_jwt,
+  user_cart,
   cartExist,
   async (req: Request, res: Response) => {
     const cid = req.params.cid;
     const products = req.body;
-    const response = await CartController.updateProducts(cid, products);
+    const response: any = await CartController.updateProducts(cid, products);
 
     return res
-      .status(response?.status || 200)
+      .status(response?.status)
       .json({ message: response?.message });
   }
 );
 
 cartRouter.delete(
   "/products",
-  passport_jwt,
+  user_cart,
   cartExist,
   async (req: Request, res: Response) => {
     const { cid, pid } = req.body;
     const cart = await CartController.deleteProduct(cid, pid);
 
-    return res.status(200).json(cart);
+    return res.status(cart?.status).json({ message: cart?.message });
   }
 );
 

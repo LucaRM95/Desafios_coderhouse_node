@@ -1,10 +1,9 @@
 import { ProductModel } from "../../services/interfaces/ProductInterface";
-import Product from "../../models/products/products.model";
-import buildResponse from "../../services/helpers/buildResponse";
+import ProductsDao from "../../dao/products/ProductsDao";
 
 class ProductsController {
   static async addProduct(product: ProductModel) {
-    Product.insertMany(product);
+    await ProductsDao.addProduct(product);
   }
 
   static async getProducts(
@@ -13,21 +12,22 @@ class ProductsController {
     sortParam: any = 0,
     criteria: any = {}
   ) {
-    const options = {
-      limit: limitParam,
-      page: pageNumber,
-      sort:
-        sortParam == 1 || sortParam == -1 ? { price: sortParam } : {},
-    };
-    const criteriaParsed = (criteria && criteria !== '{}') ? {} : JSON.parse(criteria);
+    const response = await ProductsDao.getProducts(
+      limitParam,
+      pageNumber,
+      sortParam,
+      criteria
+    );
 
-    const response = await Product?.paginate(criteriaParsed, options );
-    const newResponse = buildResponse(response);
-    return newResponse;
+    if (response?.payload.length === 0) {
+      return { status: 400, message: "Doesn't exists products in database." };
+    }
+
+    return { status: 200, response};
   }
 
   static async getProductByID(id: string) {
-    const res = Product.findOne({
+    const res = ProductsDao.getProductByID({
       $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
     });
 
@@ -38,29 +38,13 @@ class ProductsController {
     id: string | number,
     updatedProduct: Partial<ProductModel>
   ) {
-    const res = Product.findOneAndUpdate(
-      {
-        $or: [{ _id: id }, { code: id }],
-      },
-      {
-        code: updatedProduct.code,
-        status: updatedProduct.status,
-        title: updatedProduct.title,
-        description: updatedProduct.description,
-        category: updatedProduct.category,
-        thumbnail: updatedProduct.thumbnail,
-        price: updatedProduct.price,
-        stock: updatedProduct.stock,
-      }
-    );
+    const res = ProductsDao.updateProduct(id, updatedProduct);
 
     return res;
   }
 
   static async deleteProduct(id: string | number) {
-    const res = await Product.deleteOne({
-      $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
-    });
+    const res = await ProductsDao.deleteProduct(id);
 
     return res.deletedCount;
   }
