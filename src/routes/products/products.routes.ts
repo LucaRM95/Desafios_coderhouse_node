@@ -32,17 +32,13 @@ productsRouter.get(
   async (req: Request, res: Response) => {
     const pid = req.params.pid;
 
-    try {
-      const query_res = await ProductsController.getProductByID(pid);
-      if (query_res === null) {
-        return res.status(404).json({
-          message: `The product with id ${pid} doesn't exists in the database.`,
-        });
-      }
-      res.status(200).json(query_res);
-    } catch (err) {
-      return res.status(500).json({ message: "Error trying to obtain one product." });
+    const query_res = await ProductsController.getProductByID(pid);
+    if (query_res === null) {
+      return res.status(404).json({
+        message: `The product with id ${pid} doesn't exists in the database.`,
+      });
     }
+    res.status(200).json(query_res);
   }
 );
 
@@ -86,31 +82,15 @@ productsRouter.put(
   authPolicies(["ADMIN"], "edit"),
   updateValidateProductData,
   async (req: Request, res: Response) => {
-    const body: ProductModel = req.body;
-    const { title, description, price, stock, thumbnail } = body;
-    let { code } = req.body;
+    const product: ProductModel = req.body;
     const pid = req.params.pid;
 
-    const newProduct = {
-      ...body,
-      title,
-      description,
-      price,
-      stock,
-      thumbnail,
-      code,
-    };
-
     try {
-      const query_res = await ProductsController.updateProduct(pid, newProduct);
-      if (query_res === null) {
-        return res.status(404).json({
-          message: `The product with id ${pid} doesn't exists in database.`,
-        });
-      }
+      const query_res = await ProductsController.updateProduct(pid, product);
+
       return res
-        .status(200)
-        .json({ message: "Product has been updated successfully." });
+        .status(query_res?.status)
+        .json({ message: query_res?.message });
     } catch (err) {
       return res.status(500).json({
         message: "An error occurred to try update one product.",
@@ -135,8 +115,7 @@ productsRouter.delete(
     const rta = await ProductsController.deleteProduct(id);
     if (rta !== 1) {
       return res.status(404).json({
-        message:
-          "The product to trying to delete doesn't exists in database.",
+        message: "The product to trying to delete doesn't exists in database.",
       });
     }
     return res

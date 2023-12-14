@@ -1,9 +1,14 @@
 import { ProductModel } from "../../services/interfaces/ProductInterface";
 import ProductsDao from "../../dao/products/ProductsDao";
+import buildResponse from "../../services/helpers/buildResponse";
 
 class ProductsController {
   static async addProduct(product: ProductModel) {
-    await ProductsDao.addProduct(product);
+    try {
+      await ProductsDao.create(product);
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error.message}.`);
+    }
   }
 
   static async getProducts(
@@ -12,41 +17,68 @@ class ProductsController {
     sortParam: any = 0,
     criteria: any = {}
   ) {
-    const response = await ProductsDao.getProducts(
-      limitParam,
-      pageNumber,
-      sortParam,
-      criteria
-    );
-
-    if (response?.payload.length === 0) {
-      return { status: 400, message: "Doesn't exists products in database." };
+    try {
+      const options = {
+        limit: limitParam,
+        page: pageNumber,
+        sort: sortParam == 1 || sortParam == -1 ? { price: sortParam } : {},
+      };
+  
+      const products: any = await ProductsDao.get(criteria, true, options);
+      const newProductsResponse = buildResponse(products);
+  
+      if (newProductsResponse?.payload.length === 0) {
+        return { status: 400, message: "Doesn't exists products in database." };
+      }
+      
+      return { status: 200, newProductsResponse };
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error?.message}.`);
     }
-
-    return { status: 200, response};
   }
 
-  static async getProductByID(id: string) {
-    const res = ProductsDao.getProductByID({
-      $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
-    });
+  static async getProductByID(id: string | number) {
+    try {
+      const criteria = {
+        $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
+      };
 
-    return res;
+      const res = await ProductsDao.get(criteria);
+      
+      return res;
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error.message}.`);
+    }
   }
 
   static async updateProduct(
     id: string | number,
     updatedProduct: Partial<ProductModel>
   ) {
-    const res = ProductsDao.updateProduct(id, updatedProduct);
+    try {
+      const res = await ProductsDao.update(id, updatedProduct);
+      
+      if (res.matchedCount === 0) {
+        return {
+          status: 404,
+          message: `The product with id ${id} doesn't exists in database.`,
+        };
+      }
 
-    return res;
+      return { status: 200, message: "Product has been updated successfully." };
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error.message}.`);
+    }
   }
 
   static async deleteProduct(id: string | number) {
-    const res = await ProductsDao.deleteProduct(id);
-
-    return res.deletedCount;
+    try {
+      const res = await ProductsDao.delete(id);
+  
+      return res.deletedCount;
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error.message}.`);
+    }
   }
 }
 

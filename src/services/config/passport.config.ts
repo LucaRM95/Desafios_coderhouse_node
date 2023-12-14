@@ -8,8 +8,6 @@ import { hashPass } from "../helpers/auth/auth_helpers";
 import { Strategy as LocalStrategy } from "passport-local";
 import coookieExtractor from "../helpers/cookies/cookieExtractor";
 import UserController from "../../controllers/user/UserController";
-import UserDao from '../../dao/user/UserDao';
-import CartController from "../../controllers/cart/CartController";
 import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
 import CartDao from "../../dao/cart/CartDao";
 import { CartModel } from "../interfaces/CartInterface";
@@ -31,7 +29,7 @@ export const init = () => {
     "register",
     new LocalStrategy(opts, async (req: Request, email, password, done) => {
       try {
-        const user = await UserController.findOneUser(email, "REGISTER");
+        const user = await UserController.findOne(email, "REGISTER");
         
         if (user) {
           return done(
@@ -42,7 +40,7 @@ export const init = () => {
             undefined
           );
         }
-        const cart: CartModel | any = await CartDao.createCart();
+        const cart: CartModel | any = await CartDao.create();
         
         const newUser: UserModel = {
           ...req.body,
@@ -73,7 +71,7 @@ export const init = () => {
     "login",
     new LocalStrategy(opts, async (req: Request, email, password, done) => {
       try {
-        const user: UserModel | any = await UserController.findOneUser(email);
+        const user: UserModel | any = await UserController.findOne(email);
 
         done(null, {
           user: user ? user : undefined,

@@ -8,10 +8,10 @@ export  const createValidateProductData = async (
   res: Response,
   next: NextFunction
 ) => {
-  const products = await ProductsController.getProducts();
+  const products: any = await ProductsController.getProducts();
   const { code, title, description, price, stock, category } = req.body;
-
-  const isCodeExists = products?.response?.payload.find((product: ProductModel) => product.code === code)
+  
+  const isCodeExists = products?.newProductsResponse?.payload.find((product: ProductModel) => product.code === code)
     ? true
     : false;
 

@@ -7,147 +7,120 @@ import CartDao from "../../dao/cart/CartDao";
 
 class CartController {
   static async getCart(cid: string) {
-    const cart = await CartDao.getCart(cid);
+    try {
+      let populated_cart;
+      const cart: CartModel | any = await CartDao.get({ _id: cid });
 
-    return cart;
+      if (cart) {
+        populated_cart = cart.populate({
+          path: "products.pid",
+          model: "Product",
+          select: "title description category thumbnail price",
+        });
+        return populated_cart;
+      }
+
+      return cart;
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error.message}.`);
+    }
   }
 
   static async createCart() {
-    const cart: CartModel | any = await Cart.create({
-      _id: uuid(),
-      products: [],
-    });
+    try {
+      const cart: CartModel | any = await CartDao.create();
 
-    if (!cart) {
+      if (!cart) {
+        return {
+          status: 400,
+          message: "Ocurrió un error al intentar crear el carrito.",
+        };
+      }
+
       return {
-        status: 400,
-        message: "Ocurrió un error al intentar crear el carrito.",
+        status: 201,
+        message: "Carrito creado correctamente",
+        cid: cart._id,
       };
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error?.message}.`);
     }
-
-    return {
-      status: 201,
-      message: "Carrito creado correctamente",
-      cid: cart._id,
-    };
   }
 
   static async addProduct(cid: string, pid: string) {
-    const products = await ProductsDao.getProducts();
-    const productFinded = products?.payload.find(
-      (product: ProductModel) => product._id === pid
-    );
+    try {
+      const products: Array<ProductModel> | any = await ProductsDao.get();
 
-    if (productFinded === undefined) {
-      return {
-        status: 404,
-        message:
-          "El producto que intentas agregar no existe en la base de datos.",
-      };
+      const productFinded = products?.find(
+        (product: ProductModel) => product._id === pid
+      );
+
+      if (productFinded === undefined) {
+        return {
+          status: 404,
+          message:
+            "El producto que intentas agregar no existe en la base de datos.",
+        };
+      }
+      const cart = await CartDao.get({ _id: cid, "products.pid": pid });
+
+      if (cart) {
+        await CartDao.update(
+          { _id: cid, "products.pid": pid },
+          { $inc: { "products.$.quantity": 1 } }
+        );
+      } else {
+        await CartDao.update(
+          { _id: cid },
+          { $push: { products: { pid, quantity: 1 } } }
+        );
+      }
+
+      return { status: 200, message: `Product has added to cart ${cid}.` };
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error?.message}.`);
     }
-
-    await CartDao.addProduct(cid, pid);
-
-    return { status: 200, message: `Product has added to cart ${cid}.` };
   }
 
   static async updateQuantity(cid: string, _pid: string, quantity: number) {
-    const res = await CartDao.updateQuantity(cid, _pid, quantity);
-    if (res.modifiedCount === 0) {
-      return {
-        status: 404,
-        message: "No existe producto o carrito para actualizar la cantidad.",
-      };
-    }
+    try {
+      const cart: CartModel | null = await CartDao.get({ _id: cid });
 
-    return { status: 200, message: "Cantidad actualizada correctamente." };
-  }
-
-  static async updateProducts(cid: string, products: any) {
-    const productosEnviados = [...products];
-    const productsArray = await ProductsDao.getProducts();
-   
-    let productosEncontrados = [];
-
-    for (const productoEnviado of productosEnviados) {
-      const encontrado = productsArray.payload.find(
-        (product: any) => product._id === productoEnviado.pid
+      const res = await CartDao.update(
+        { _id: cid, "products.pid": _pid },
+        { $set: { "products.$.quantity": quantity } }
       );
 
-      if (encontrado) {
-        productosEncontrados.push(encontrado);
+      if (res.modifiedCount === 0) {
+        return {
+          status: 404,
+          message: "No existe producto o carrito para actualizar la cantidad.",
+        };
       }
+
+      return { status: 200, message: "Cantidad actualizada correctamente." };
+    } catch (error: any) {
+      throw new Error(`Internal Server Error: ${error?.message}.`);
     }
-
-    if (productosEncontrados.length !== productosEnviados.length) {
-      return {
-        status: 400,
-        message: "Enviaste un producto que no existe en la bbdd.",
-      };
-    }
-
-    const bulkOps = products.map((product: any) => ({
-      updateOne: {
-        filter: { _id: cid, "products.pid": product.pid },
-        update: {
-          $inc: {
-            "products.$.quantity": 1,
-          },
-        },
-      },
-    }));
-
-    const cart: CartModel | any = await CartDao.getCart(cid);
-
-    products.forEach((product: any) => {
-      const found = bulkOps.find(
-        (op: any) => op.updateOne.filter["cart.products.pid"] === product.pid
-      );
-
-      if (!found) {
-        if (cart[0] && Array.isArray(cart[0].products)) {
-          const productsArray = Array.from(cart[0].products);
-          const productInCart = productsArray.filter(
-            (cartProduct: any) => cartProduct.pid === product.pid
-          );
-
-          if (productInCart.length === 0) {
-            bulkOps.push({
-              updateOne: {
-                filter: { _id: cid },
-                update: {
-                  $addToSet: {
-                    products: {
-                      pid: product.pid,
-                      quantity: product.quantity,
-                    },
-                  },
-                },
-              },
-            });
-          }
-        }
-      }
-    });
-
-    await CartDao.updateProducts(bulkOps);
-
-    return {
-      status: 200,
-      message: "Los productos fueron agregados correctamente",
-    };
   }
 
   static async deleteProduct(cid: string, _pid: string) {
-    const deleted_product = await CartDao.deleteProduct(cid, _pid);
-    if (deleted_product.modifiedCount === 0) {
+    try {
+      const deleted_product = await CartDao.delete(cid, _pid);
+      if (deleted_product.modifiedCount === 0) {
+        return {
+          status: 404,
+          message:
+            "El producto que deseas eliminar no existe o ya fue eliminado.",
+        };
+      }
       return {
-        status: 404,
-        message:
-          "El producto que deseas eliminar no existe o ya fue eliminado.",
+        status: 200,
+        message: "Se ha eliminado el producto del carrito.",
       };
+    } catch (error: any) {
+      throw new Error(`Server Internal Error: ${error?.message}.`);
     }
-    return { status: 200, message: "Se ha eliminado el producto del carrito." };
   }
 }
 

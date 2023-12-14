@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import ProductsManager from "../../controllers/products/ProductsController";
+import ProductsController from "../../controllers/products/ProductsController";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
 
 // Middleware de validación de datos del producto
@@ -17,12 +17,10 @@ export const updateValidateProductData = async (
       .json({ message: "El campo id no se puede modificar." });
   }
 
-  const exists = await ProductsManager.getProductByID(code);
-  console.log(exists)
-  if (code === exists?.code) {
+  if (code !== undefined) {
     return res
       .status(400)
-      .json({ message: "El campo código no se puede modificar porque ya existe en otro producto." });
+      .json({ message: "El campo código no se puede modificar." });
   }
 
   next();
