@@ -14,11 +14,8 @@ class UserDao {
     return User.updateOne(filter_query, criteria);
   }
 
-  static delete(cid: string, _pid: string) {
-    return User.updateOne(
-      { _id: cid },
-      { $pull: { products: { pid: _pid } } }
-    );
+  static delete(id: string) {
+    return User.deleteOne({ _id: id });
   }
 }
 
