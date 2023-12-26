@@ -1,20 +1,26 @@
-import express, { IRouter, Request, Response } from "express";
-import coookieExtractor from "../../services/helpers/cookies/cookieExtractor";
-import { verifyToken } from "../../services/helpers/auth/token_helpers";
+import express, { IRouter, NextFunction, Request, Response } from "express";
 import SessionController from "../../controllers/session/SessionController";
 
 const sessionRouter: IRouter = express.Router();
 
-sessionRouter.get("/", async (req: Request, res: Response) => {
-  const session = await SessionController.currentSession(req);
-
-  return res.status(session?.status).json(session);
+sessionRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const session = await SessionController.currentSession(req);
+  
+    return res.status(200).json(session);
+  } catch (error) {
+    next(error);
+  }  
 });
 
-sessionRouter.get("/logout", async (req: Request, res: Response) => {
-  const logout_res = await SessionController.logoutSession(req, res);
-
-  return res.status(logout_res?.status).json(logout_res);
+sessionRouter.get("/logout", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const logout_res = await SessionController.logoutSession(req, res);
+  
+    return res.status(200).json(logout_res);
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default sessionRouter;

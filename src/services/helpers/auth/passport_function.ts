@@ -1,6 +1,7 @@
 import passport from "passport";
 import { NextFunction, Request, Response } from "express";
 import UserController from "../../../controllers/user/UserController";
+import UnauthorizedException from "../../errors/UnauthorizedException";
 
 export const passport_login = (
   req: Request,
@@ -8,27 +9,28 @@ export const passport_login = (
   next: NextFunction
 ) => {
   passport.authenticate("login", async (err: any, body: any, info: any) => {
-    const { email, password } = req.body;
-    if (err !== null) {
-      return res.status(401).json(err);
-    }
+    try {
+      const { email, password } = req.body;
+      if (err !== null) {
+        throw new UnauthorizedException(err?.message);
+      }
 
-    const result = await UserController.loginUser(email, password);
-    if (result.status !== 200) {
-      return res.status(result?.status).json({
-        status: result?.status,
-        message: result?.message
-      });
-    }
+      const result = await UserController.loginUser(email, password);
+      if (!result) {
+        throw new UnauthorizedException("Password or email are invalid.");
+      }
 
-    if (!body) {
-      return res
-        .status(info?.status || 401)
-        .json({ message: info?.message || "Authentication failed" });
-    }
+      if (!body) {
+        throw new UnauthorizedException(
+          info?.message || "Authentication failed"
+        );
+      }
 
-    req.body = body;
-    next();
+      req.body = body;
+      next();
+    } catch (error) {
+      next(error);
+    }
   })(req, res, next);
 };
 
@@ -38,17 +40,19 @@ export const passport_register = (
   next: NextFunction
 ) => {
   passport.authenticate("register", async (err: any, body: any, info: any) => {
-    if (err !== null) {
-      return res.status(401).json(err);
-    }
+    try {
+      if (err !== null) {
+        throw new UnauthorizedException(err?.message);
+      }
 
-    if (!body) {
-      return res
-        .status(info?.status || 401)
-        .json({ message: info?.message || "Registration failed" });
+      if (!body) {
+        throw new UnauthorizedException(info?.message || "Registration failed");
+      }
+      req.body = body;
+      next();
+    } catch (error) {
+      next(error);
     }
-    req.body = body;
-    next();
   })(req, res, next);
 };
 
@@ -61,14 +65,17 @@ export const passport_jwt = (
     "jwt",
     { session: false },
     (err: any, payload: any, info: any) => {
-      if (!payload) {
-        return res.status(401).json({
-          status: 401,
-          message: "You're not authenticated to do this action.",
-        });
+      try {
+        if (!payload) {
+          throw new UnauthorizedException(
+            "You're not authenticated to do this action."
+          );
+        }
+        req.user = payload;
+        next();
+      } catch (error) {
+        next(error);
       }
-      req.user = payload;
-      next();
     }
   )(req, res, next);
 };

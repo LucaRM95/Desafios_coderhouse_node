@@ -7,9 +7,10 @@ import userRouter from "./routes/users/user.routes";
 import productsRouter from "./routes/products/products.routes";
 import env  from "./services/config/dotenv.config";
 import { init as initPassport } from './services/config/passport.config';
-import express, { Express, Request, Response, urlencoded } from "express";
+import express, { Express, NextFunction, Request, Response, urlencoded } from "express";
 import sessionRouter from "./routes/sessions/session.routes";
 import { passport_jwt } from "./services/helpers/auth/passport_function";
+import Exception from "./services/errors/GeneralException";
 
 const app: Express = express();
 
@@ -43,9 +44,17 @@ app.use("/api", productsRouter);
 app.use("/api/carts", passport_jwt, cartRouter);
 app.use("/sessions", sessionRouter);
 
-//Middleware para manejar páginas no encontradas (404)
-app.use((req, res) => {
-  res.status(404).json({ message: "Uuups, La página buscada no existe" });
+app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+  if (error instanceof Exception) {
+    res.status(error.getStatus()).json({ status: 'error', message: error.message });
+  } else {
+    const message = `Ha ocurrido un error desconocido: ${error.message}`;
+    res.status(500).json({ status: 'error', message });
+  }
 });
+
+app.use("*", (req: Request, res: Response) => {
+  res.status(404).json({ message: "Page not found." })
+})
 
 export default app;

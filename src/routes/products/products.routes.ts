@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import express, { IRouter, Request, Response } from "express";
+import express, { IRouter, NextFunction, Request, Response } from "express";
 import { authPolicies } from "../../services/helpers/auth/auth_policies";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
 import { passport_jwt } from "../../services/helpers/auth/passport_function";
@@ -12,33 +12,37 @@ const productsRouter: IRouter = express.Router();
 productsRouter.get(
   "/products",
   passport_jwt,
-  async (req: Request, res: Response) => {
-    const { limit, page, sort, criteria } = req.query;
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { limit, page, sort, criteria } = req.query;
 
-    const allProducts = await ProductsController.getProducts(
-      limit,
-      page,
-      sort,
-      criteria
-    );
+      const allProducts = await ProductsController.getProducts(
+        limit,
+        page,
+        sort,
+        criteria
+      );
 
-    res.status(allProducts?.status).json(allProducts);
+      res.status(200).json(allProducts);
+    } catch (error) {
+      next(error);
+    }
   }
 );
 
 productsRouter.get(
   "/product/:pid",
   passport_jwt,
-  async (req: Request, res: Response) => {
-    const pid = req.params.pid;
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const pid = req.params.pid;
 
-    const query_res = await ProductsController.getProductByID(pid);
-    if (query_res === null) {
-      return res.status(404).json({
-        message: `The product with id ${pid} doesn't exists in the database.`,
-      });
+      const query_res = await ProductsController.getProductByID(pid);
+      
+      res.status(200).json(query_res);
+    } catch (error) {
+      next(error);
     }
-    res.status(200).json(query_res);
   }
 );
 
@@ -47,32 +51,36 @@ productsRouter.post(
   passport_jwt,
   authPolicies(["ADMIN"], "add"),
   createValidateProductData,
-  async (req: Request, res: Response) => {
-    const {
-      code,
-      title,
-      description,
-      category,
-      price,
-      thumbnail = [],
-      stock = 0,
-    }: ProductModel = req.body;
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const {
+        code,
+        title,
+        description,
+        category,
+        price,
+        thumbnail = [],
+        stock = 0,
+      }: ProductModel = req.body;
 
-    const newProduct = {
-      _id: uuidv4(),
-      code,
-      status: true,
-      title,
-      category,
-      thumbnail,
-      description,
-      price,
-      stock,
-    };
-    ProductsController.addProduct(newProduct);
-    res
-      .status(201)
-      .json({ message: "Product has been added successfully.", newProduct });
+      const newProduct = {
+        _id: uuidv4(),
+        code,
+        status: true,
+        title,
+        category,
+        thumbnail,
+        description,
+        price,
+        stock,
+      };
+      await ProductsController.addProduct(newProduct);
+      res
+        .status(201)
+        .json({ message: "Product has been added successfully.", newProduct });
+    } catch (error) {
+      next(error);
+    }
   }
 );
 
@@ -81,20 +89,18 @@ productsRouter.put(
   passport_jwt,
   authPolicies(["ADMIN"], "edit"),
   updateValidateProductData,
-  async (req: Request, res: Response) => {
-    const product: ProductModel = req.body;
-    const pid = req.params.pid;
-
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const product: ProductModel = req.body;
+      const pid = req.params.pid;
+
       const query_res = await ProductsController.updateProduct(pid, product);
 
       return res
-        .status(query_res?.status)
-        .json({ message: query_res?.message });
-    } catch (err) {
-      return res.status(500).json({
-        message: "An error occurred to try update one product.",
-      });
+        .status(200)
+        .json(query_res);
+    } catch (error) {
+      next(error);
     }
   }
 );
@@ -103,24 +109,18 @@ productsRouter.delete(
   "/product/:pid",
   passport_jwt,
   authPolicies(["ADMIN"], "delete"),
-  async (req: Request, res: Response) => {
-    const id: string | number = req.params.pid;
-
-    if (!id) {
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id: string | number = req.params.pid;
+  
+      await ProductsController.deleteProduct(id);
+      
       return res
-        .status(400)
-        .json({ messsage: "The id is necessary to delete the product." });
+        .status(200)
+        .json({ message: "The product was deleted successfully." });
+    } catch (error) {
+      next(error);
     }
-
-    const rta = await ProductsController.deleteProduct(id);
-    if (rta !== 1) {
-      return res.status(404).json({
-        message: "The product to trying to delete doesn't exists in database.",
-      });
-    }
-    return res
-      .status(200)
-      .json({ message: "The product was deleted successfully." });
   }
 );
 

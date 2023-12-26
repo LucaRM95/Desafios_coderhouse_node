@@ -52,8 +52,8 @@ export const init = () => {
 
         const result = await UserController.registerUser(newUser);
 
-        if (result.status !== 201) {
-          return { message: result.message };
+        if (!result) {
+          return { message: "Password or email are invalid." };
         }
         done(null, {
           result: result ? result : undefined,

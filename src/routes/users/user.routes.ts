@@ -1,4 +1,4 @@
-import express, { IRouter, Request, Response } from "express";
+import express, { IRouter, NextFunction, Request, Response } from "express";
 import { tokenGenerator } from "../../services/helpers/auth/token_helpers";
 import {
   passport_login,
@@ -17,7 +17,7 @@ const cookieOpts = {
 userRouter.post(
   "/login",
   passport_login,
-  async (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const token = tokenGenerator(req.body.user);
 
     return res
