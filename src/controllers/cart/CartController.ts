@@ -19,7 +19,7 @@ class CartController {
     populated_cart = cart.populate({
       path: "products.pid",
       model: "Product",
-      select: "title description category thumbnail price",
+      select: "title description category thumbnail price stock",
     });
     return populated_cart;
   }

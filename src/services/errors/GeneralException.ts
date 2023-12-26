@@ -1,5 +1,5 @@
 class Exception extends Error{
-    private status = 200;
+    private status = 400;
 
     constructor(message: string, statusCode: number){
         super(message);

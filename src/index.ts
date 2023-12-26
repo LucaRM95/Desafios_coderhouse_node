@@ -11,6 +11,7 @@ import express, { Express, NextFunction, Request, Response, urlencoded } from "e
 import sessionRouter from "./routes/sessions/session.routes";
 import { passport_jwt } from "./services/helpers/auth/passport_function";
 import Exception from "./services/errors/GeneralException";
+import orderRoutes from "./routes/order/order.routes";
 
 const app: Express = express();
 
@@ -41,7 +42,7 @@ app.use(passport.initialize());
 
 app.use("/auth", userRouter);
 app.use("/api", productsRouter);
-app.use("/api/carts", passport_jwt, cartRouter);
+app.use("/api/cart", passport_jwt, cartRouter, orderRoutes);
 app.use("/sessions", sessionRouter);
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {

@@ -59,7 +59,7 @@ class ProductsController {
     id: string | number,
     updatedProduct: Partial<ProductModel>
   ) {
-    const res = await ProductsDao.update(id, updatedProduct);
+    const res = await ProductsDao.update(id, { $set: updatedProduct });
 
     if (res.matchedCount === 0) {
       throw new NotFoundException(

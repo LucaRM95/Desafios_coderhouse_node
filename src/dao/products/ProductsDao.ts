@@ -13,8 +13,11 @@ class ProductsDao {
     return Product.create(product);
   }
 
-  static update(id: string | number, updatedProduct: Partial<ProductModel>) {
-    return Product.updateOne({ _id: id }, { $set: updatedProduct });
+  static update(
+    pid: string | number,
+    query: any = {}
+  ) {
+    return Product.updateOne({ _id: pid }, query).exec();
   }
 
   static delete(id: string | number) {
