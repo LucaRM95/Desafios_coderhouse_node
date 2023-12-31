@@ -6,11 +6,13 @@ import NotFoundException from "../../services/errors/NotFoundException";
 
 class ProductsController {
   static async addProduct(product: ProductModel) {
-    const productFinded: any = await this.getProductByID(product.code);
-    
+    const criteria = {
+      $or: [{ _id: { $eq: product._id } }, { code: { $eq: product.code } }],
+    };
+    const productFinded: any = await ProductsDao.get(criteria);
     if (productFinded.length > 0) {
       throw new NotFoundException(
-        `The product with id ${product.code} doesn't exists in the database.`
+        `The product with id ${product.code} already exists in the database.`
       );
     }
     
