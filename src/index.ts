@@ -12,6 +12,7 @@ import sessionRouter from "./routes/sessions/session.routes";
 import { passport_jwt } from "./services/helpers/auth/passport_function";
 import Exception from "./services/errors/GeneralException";
 import orderRoutes from "./routes/order/order.routes";
+import mockRoutes from "./routes/mock/mock.routes";
 
 const app: Express = express();
 
@@ -41,7 +42,7 @@ initPassport();
 app.use(passport.initialize());
 
 app.use("/auth", userRouter);
-app.use("/api", productsRouter);
+app.use("/api", productsRouter, mockRoutes);
 app.use("/api/cart", passport_jwt, cartRouter, orderRoutes);
 app.use("/sessions", sessionRouter);
 

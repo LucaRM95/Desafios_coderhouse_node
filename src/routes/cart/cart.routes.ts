@@ -2,6 +2,7 @@ import { cartExist } from "../../middlewares/cart/cartExist";
 import express, { IRouter, NextFunction, Request, Response } from "express";
 import CartController from "../../controllers/cart/CartController";
 import { user_cart } from "../../middlewares/cart/user_cart";
+import { authPolicies } from "../../services/helpers/auth/auth_policies";
 
 const cartRouter: IRouter = express.Router();
 
@@ -38,6 +39,7 @@ cartRouter.post(
 
 cartRouter.post(
   "/product",
+  authPolicies(["USER"], "edit"),
   user_cart,
   cartExist,
   async (req: Request, res: Response, next: NextFunction) => {
