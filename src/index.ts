@@ -59,6 +59,7 @@ app.use("/loggerTest", loggerRouter);
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof Exception) {
+    req.logger.error(error.message);
     res
       .status(error.getStatus())
       .json({ status: "error", message: error.message });
