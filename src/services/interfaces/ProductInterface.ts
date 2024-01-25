@@ -1,6 +1,7 @@
 export interface ProductModel {
   _id: string;
   code: string;
+  owner: string;
   status: boolean;
   title: string;
   description: string;

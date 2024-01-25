@@ -28,6 +28,19 @@ userRouter.post(
 );
 
 userRouter.post(
+  "/reset-password",
+  passport_login,
+  (req: Request, res: Response, next: NextFunction) => {
+    const token = tokenGenerator(req.body.user);
+
+    return res
+      .cookie("access_token", token, cookieOpts)
+      .status(200)
+      .json({ status: 200, message: "You have logged successfully." });
+  }
+);
+
+userRouter.post(
   "/register",
   validateRegisterData,
   passport_register,

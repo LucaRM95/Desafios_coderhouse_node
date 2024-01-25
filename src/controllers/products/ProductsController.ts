@@ -1,22 +1,47 @@
-import { ProductModel } from "../../services/interfaces/ProductInterface";
+import { v4 as uuidv4 } from "uuid";
 import ProductsDao from "../../dao/products/ProductsDao";
 import buildResponse from "../../services/helpers/buildResponse";
-import BadRequestException from "../../services/errors/BadRequestException";
 import NotFoundException from "../../services/errors/NotFoundException";
+import ConflictException from "../../services/errors/ConflictException";
+import { ProductModel } from "../../services/interfaces/ProductInterface";
+import BadRequestException from "../../services/errors/BadRequestException";
 
 class ProductsController {
-  static async addProduct(product: ProductModel) {
+  static async addProduct(product: ProductModel, currentUser: any) {
     const criteria = {
       $or: [{ _id: { $eq: product._id } }, { code: { $eq: product.code } }],
     };
     const productFinded: any = await ProductsDao.get(criteria);
     if (productFinded.length > 0) {
-      throw new NotFoundException(
+      throw new ConflictException(
         `The product with id ${product.code} already exists in the database.`
       );
     }
     
-    return ProductsDao.create(product); 
+    const {
+      code,
+      title,
+      description,
+      category,
+      price,
+      thumbnail = [],
+      stock = 0,
+    }: ProductModel = product;
+    
+    const newProduct = {
+      _id: uuidv4(),
+      code,
+      owner: currentUser.role === "PREMIUM" ? currentUser.email : "ADMIN",
+      status: true,
+      title,
+      category,
+      thumbnail,
+      description,
+      price,
+      stock,
+    };
+
+    return ProductsDao.create(newProduct); 
   }
 
   static async getProducts(

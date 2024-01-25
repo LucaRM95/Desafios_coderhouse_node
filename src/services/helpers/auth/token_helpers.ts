@@ -6,11 +6,12 @@ import { UserModel } from "../../interfaces/UserInterface";
 const JWT_SECRET: string = env.JWT_SECRET || "";
 
 export const tokenGenerator = (user: UserModel) => {
-  const { _id, first_name, last_name, email, cid }: UserModel = user;
+  const { _id, first_name, last_name, email, cid, role }: UserModel = user;
   const payload = {
     id: _id,
     first_name,
     last_name,
+    role,
     email,
     cid
   };

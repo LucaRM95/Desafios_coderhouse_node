@@ -7,6 +7,7 @@ const Schema = mongoose.Schema;
 const productSchema = new Schema({
     _id: { type: String, required: true },
     code: String,
+    owner: String,
     status: Boolean,
     title: String,
     description: String,

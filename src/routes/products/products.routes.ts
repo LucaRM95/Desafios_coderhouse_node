@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import express, { IRouter, NextFunction, Request, Response } from "express";
 import { authPolicies } from "../../services/helpers/auth/auth_policies";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
@@ -6,6 +5,8 @@ import { passport_jwt } from "../../services/helpers/auth/passport_function";
 import ProductsController from "../../controllers/products/ProductsController";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
+import UserController from "../../controllers/user/UserController";
+import SessionController from "../../controllers/session/SessionController";
 
 const productsRouter: IRouter = express.Router();
 
@@ -38,7 +39,7 @@ productsRouter.get(
       const pid = req.params.pid;
 
       const query_res = await ProductsController.getProductByID(pid);
-      
+
       res.status(200).json(query_res);
     } catch (error) {
       next(error);
@@ -49,35 +50,14 @@ productsRouter.get(
 productsRouter.post(
   "/product",
   passport_jwt,
-  authPolicies(["ADMIN"], "add"),
+  authPolicies(["ADMIN", "PREMIUM"], "add"),
   createValidateProductData,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const {
-        code,
-        title,
-        description,
-        category,
-        price,
-        thumbnail = [],
-        stock = 0,
-      }: ProductModel = req.body;
-
-      const newProduct = {
-        _id: uuidv4(),
-        code,
-        status: true,
-        title,
-        category,
-        thumbnail,
-        description,
-        price,
-        stock,
-      };
-      await ProductsController.addProduct(newProduct);
-      res
-        .status(201)
-        .json({ message: "Product has been added successfully.", newProduct });
+      const currentUser = await SessionController.currentSession(req);
+    
+      await ProductsController.addProduct(req.body, currentUser);
+      res.status(201).json({ message: "Product has been added successfully." });
     } catch (error) {
       next(error);
     }
@@ -87,7 +67,7 @@ productsRouter.post(
 productsRouter.put(
   "/product/:pid",
   passport_jwt,
-  authPolicies(["ADMIN"], "edit"),
+  authPolicies(["ADMIN", "PREMIUM"], "edit"),
   updateValidateProductData,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -96,9 +76,7 @@ productsRouter.put(
 
       const query_res = await ProductsController.updateProduct(pid, product);
 
-      return res
-        .status(200)
-        .json(query_res);
+      return res.status(200).json(query_res);
     } catch (error) {
       next(error);
     }
@@ -108,13 +86,13 @@ productsRouter.put(
 productsRouter.delete(
   "/product/:pid",
   passport_jwt,
-  authPolicies(["ADMIN"], "delete"),
+  authPolicies(["ADMIN", "PREMIUM"], "delete"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id: string | number = req.params.pid;
-  
+
       await ProductsController.deleteProduct(id);
-      
+
       return res
         .status(200)
         .json({ message: "The product was deleted successfully." });
