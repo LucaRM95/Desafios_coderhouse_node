@@ -2,12 +2,24 @@ import { NextFunction, Request, Response } from "express";
 import { UserModel } from "../../interfaces/UserInterface";
 import ProductsController from "../../../controllers/products/ProductsController";
 import UnauthorizedException from "../../errors/UnauthorizedException";
+import { ProductModel } from "../../interfaces/ProductInterface";
 
 export const authPolicies =
   (roles: Array<string>, action: string = "add") =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (roles.includes("USER")) {
+        if (req.originalUrl.includes("/api/cart/product") && action === "add") {
+          const productFinded: Array<ProductModel> =
+            await ProductsController.getProductByID(req.body?.pid);
+            
+          if ((req.user as UserModel).email === productFinded[0].owner) {
+            throw new UnauthorizedException(
+              "You're the owner of this product and you can't add to cart."
+            );
+          }
+        }
+
         return next();
       }
       const { role }: UserModel | any = req.user;
@@ -16,14 +28,24 @@ export const authPolicies =
           `Sorry, you don't have authorization to ${action} a product.`
         );
       }
-      if(req.originalUrl.includes('/api/product') && (action === "edit" || action === "delete")){
-        const productFinded = await ProductsController.getProductByID(req.params?.pid); 
-        if((req.user as UserModel).email !== productFinded?.owner && (req.user as UserModel).role !== 'ADMIN'){
-          throw new UnauthorizedException("Only the owner or an Admin can modify or delete this product.");
+      if (
+        req.originalUrl.includes("/api/product") &&
+        (action === "edit" || action === "delete")
+      ) {
+        const productFinded = await ProductsController.getProductByID(
+          req.params?.pid
+        );
+        if (
+          (req.user as UserModel).email !== productFinded?.owner &&
+          (req.user as UserModel).role !== "ADMIN"
+        ) {
+          throw new UnauthorizedException(
+            "Only the owner or an Admin can modify or delete this product."
+          );
         }
       }
       next();
     } catch (error) {
-      next(error)
+      next(error);
     }
   };

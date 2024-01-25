@@ -7,7 +7,7 @@ const userSchema = new Schema<UserModel>({
   _id: { type: String, required: true },
   first_name: String,
   last_name: String,
-  email: { type: String, unique: true },
+  email: { type: String, required: true, unique: true },
   age: Number,
   cid: { type: String },
   role: { type: String, default: 'USER', enum: ['USER', 'ADMIN', 'PREMIUM'] },

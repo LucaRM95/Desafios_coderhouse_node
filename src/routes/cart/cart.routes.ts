@@ -39,9 +39,9 @@ cartRouter.post(
 
 cartRouter.post(
   "/product",
-  authPolicies(["USER"], "edit"),
   user_cart,
   cartExist,
+  authPolicies(["USER"], "add"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { cid, pid } = req.body;
