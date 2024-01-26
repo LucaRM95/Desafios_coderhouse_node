@@ -16,16 +16,19 @@ const cookieOpts = {
   signed: true,
 };
 
-userRouter.get("/users/premium/:uid", async ( req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { uid } = req.params;
-    await UserController.changeUserRole(uid);
-    
-    res.status(200).json({ message: "You role has been changed." })
-  } catch (error) {
-    next(error)
+userRouter.get(
+  "/users/premium/:uid",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { uid } = req.params;
+      await UserController.changeUserRole(uid);
+
+      res.status(200).json({ message: "You role has been changed." });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 userRouter.post(
   "/login",
@@ -68,12 +71,13 @@ userRouter.post(
   }
 );
 
-userRouter.get(
+userRouter.post(
   "/reset-password",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await UserController.resetPassword(req);
-      res.status(200).json({ message: "Página de reseteo de password" });
+      
+      res.status(200).json({ message: "Contraseña actualizada con éxito" });
     } catch (error) {
       next(error);
     }

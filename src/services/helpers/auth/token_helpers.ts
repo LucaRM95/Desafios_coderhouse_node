@@ -31,26 +31,11 @@ export const verifyToken = (token: any) => {
 
 export const generateResetToken = (user: UserModel) => {
   const { _id, email }: UserModel = user;
+  
   const payload = {
     id: _id,
     email,
-    resetToken: true,
-    expiresIn: Date.now() + 3600000 
   };
 
-  return jwt.sign(payload, JWT_SECRET);
-};
-
-export const verifyResetToken = (token: any) => {
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, JWT_SECRET, (error: any, payload: any) => {
-      if (error) {
-        return reject(error);
-      }
-      if (!payload.resetToken) {
-        return reject(new Error("El token no es válido para restablecimiento de contraseña."));
-      }
-      resolve(payload);
-    });
-  });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
 };

@@ -13,6 +13,7 @@ import { passport_jwt } from "./services/helpers/auth/passport_function";
 import Exception from "./services/errors/GeneralException";
 import orderRoutes from "./routes/order/order.routes";
 import mockRoutes from "./routes/mock/mock.routes";
+import path from "path";
 
 const app: Express = express();
 
@@ -38,6 +39,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 initPassport();
+
+export const __dirname = path.resolve();
 
 app.use(passport.initialize());
 

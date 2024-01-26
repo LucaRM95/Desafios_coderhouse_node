@@ -1,4 +1,4 @@
-import { validatePass } from "../../services/helpers/auth/auth_helpers";
+import { hashPass, validatePass } from "../../services/helpers/auth/auth_helpers";
 import { UserModel } from "../../services/interfaces/UserInterface";
 import UserDao from "../../dao/user/UserDao";
 import NotFoundException from "../../services/errors/NotFoundException";
@@ -6,12 +6,12 @@ import UnauthorizedException from "../../services/errors/UnauthorizedException";
 import BadRequestException from "../../services/errors/BadRequestException";
 import {
   generateResetToken,
-  verifyResetToken,
   verifyToken,
 } from "../../services/helpers/auth/token_helpers";
 import EmailService from "../../services/email/email.service";
 import Exception from "../../services/errors/GeneralException";
 import { query } from "express";
+import ConflictException from "../../services/errors/ConflictException";
 
 class UserController {
   static async loginUser(email: string, pass: string) {
@@ -48,8 +48,11 @@ class UserController {
     const criteria = { $set: { role: role } };
     const res = await UserDao.update({ _id: uid }, criteria);
 
-    if(!res){
-      throw new Exception("An error has occurred trying to change the user role.", 400);
+    if (!res) {
+      throw new Exception(
+        "An error has occurred trying to change the user role.",
+        400
+      );
     }
   }
 
@@ -95,8 +98,8 @@ class UserController {
     if (!user) {
       throw new NotFoundException("User not found.");
     }
-
-    const resetToken = generateResetToken(user);
+  
+    const resetToken = generateResetToken(user[0]);
     const resetLink = `http://localhost:8080/auth/reset-password?token=${resetToken}`;
 
     await emailService.sendResetPasswordEmail(email, resetLink);
@@ -104,6 +107,7 @@ class UserController {
 
   static async resetPassword(req: Request | any) {
     const { token } = req.query;
+    const { password } = req.body;
 
     if (!token || typeof token !== "string") {
       throw new BadRequestException(
@@ -111,16 +115,26 @@ class UserController {
       );
     }
 
-    const decodedToken: any = await verifyResetToken(token);
+    const decodedToken: any = await verifyToken(token);
+    const currentTimeInSeconds = Date.now() / 1000;
 
-    if (decodedToken.exp < Date.now() / 1000) {
+    if (decodedToken.exp < currentTimeInSeconds) {
       throw new Exception(
         "El token ha expirado, por favor solicite uno nuevo.",
         400
       );
     }
+    
+    const { id } = decodedToken;
+    const findedUser: any = await UserDao.get({ _id: id });
 
-    return token;
+    if(validatePass(password, findedUser[0])){
+      throw new ConflictException("You must use a different password than the current one.");
+    }
+
+    const hashedPassword = hashPass(password);
+
+    await UserDao.update({ _id: id }, { password: hashedPassword });
   }
 }
 
