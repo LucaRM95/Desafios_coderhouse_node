@@ -5,7 +5,6 @@ import { passport_jwt } from "../../services/helpers/auth/passport_function";
 import ProductsController from "../../controllers/products/ProductsController";
 import { createValidateProductData } from "../../middlewares/product/createValidateProductData";
 import { updateValidateProductData } from "../../middlewares/product/updateValidateProductData";
-import UserController from "../../controllers/user/UserController";
 import SessionController from "../../controllers/session/SessionController";
 
 const productsRouter: IRouter = express.Router();
