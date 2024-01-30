@@ -101,7 +101,7 @@ class ProductsController {
     const res = await ProductsDao.delete(id);
 
     if (!id) {
-      throw new NotFoundException("The id is necessary to delete the product.");
+      throw new BadRequestException("The id is necessary to delete the product.");
     }
     if (res.deletedCount !== 1) {
       throw new NotFoundException(

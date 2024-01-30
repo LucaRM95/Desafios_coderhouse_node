@@ -37,9 +37,8 @@ class UserController {
     }
 
     if (findedUser[0].role === "ADMIN") {
-      throw new Exception(
-        "You can't change your role because you're an Admin",
-        400
+      throw new ConflictException(
+        "You can't change your role because you're an Admin"
       );
     }
 

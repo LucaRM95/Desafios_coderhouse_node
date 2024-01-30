@@ -29,12 +29,12 @@ class CartController {
 
     if (!cart) {
       throw new BadRequestException(
-        "Ocurrió un error al intentar crear el carrito."
+        "The cart creation encountered an error."
       );
     }
 
     return {
-      message: "Carrito creado correctamente",
+      message: "Cart created successfully.",
       cid: cart._id,
     };
   }
@@ -48,7 +48,7 @@ class CartController {
 
     if (productFinded === undefined) {
       throw new NotFoundException(
-        "El producto que intentas agregar no existe en la base de datos."
+        "The product you are trying to add does not exist in the database."
       );
     }
     const cart = await CartDao.get({ _id: cid, "products.pid": pid });
@@ -78,22 +78,22 @@ class CartController {
 
     if (res.modifiedCount === 0) {
       throw new NotFoundException(
-        "No existe producto o carrito para actualizar la cantidad."
+        "There is no product or cart to update the quantity for."
       );
     }
 
-    return { message: "Cantidad actualizada correctamente." };
+    return { message: "Quantity updated successfully." };
   }
 
   static async deleteProduct(cid: string, _pid: string) {
     const deleted_product = await CartDao.delete(cid, _pid);
     if (deleted_product.modifiedCount === 0) {
       throw new NotFoundException(
-        "El producto que deseas eliminar no existe o ya fue eliminado."
+        "The product you want to delete either does not exist or has already been deleted."
       );
     }
     return {
-      message: "Se ha eliminado el producto del carrito.",
+      message: "The product has been deleted from cart.",
     };
   }
 }

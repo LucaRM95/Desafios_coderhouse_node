@@ -1,0 +1,127 @@
+openapi: 3.0.1
+info:
+  title: API de Productos
+  description: Documentación de las rutas relacionadas con productos.
+  version: 1.0.0
+tags:
+- name: Productos
+  description: Endpoints para listar, editar, agregar y eliminar productos.
+paths:
+  /api/products:
+    get:
+      tags: 
+      - Productos
+      summary: Obtener todos los productos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: Número máximo de productos a devolver
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Página de resultados
+        - in: query
+          name: sort
+          schema:
+            type: string
+          description: Campo por el que ordenar los productos
+        - in: query
+          name: criteria
+          schema:
+            type: string
+          description: Criterios de búsqueda
+      responses:
+        "200":
+          description: OK. Devuelve todos los productos.
+        "404":
+          description: Doesn't exists products in database.
+
+  /api/product:
+    post:
+      tags: 
+      - Productos
+      summary: Agregar un nuevo producto
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductModel"
+      responses:
+        "201":
+          description: Creado. Producto agregado correctamente.
+        "409":
+          description: The product with id {product.code} already exists in the database.
+
+  /api/product/{pid}:
+    get:
+      tags: 
+      - Productos
+      summary: Obtener un producto por su ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        "200":
+          description: OK. Devuelve el producto solicitado.
+        "404":
+          description: The product with id {id} doesn't exists in the database.
+
+    put:
+      tags: 
+      - Productos
+      summary: Actualizar un producto
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductModel"
+      responses:
+        "200":
+          description: Product has been updated successfully.
+        "404":
+          description: The product with id {id} doesn't exists in database.
+
+    delete:
+      tags: 
+      - Productos
+      summary: Eliminar un producto
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        "200":
+          description: OK. Producto eliminado correctamente.
+        "400":
+          description: The id is necessary to delete the product.
+        "404":
+          description: The product to trying to delete doesn't exists in database.

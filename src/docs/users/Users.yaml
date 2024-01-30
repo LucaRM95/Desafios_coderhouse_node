@@ -1,0 +1,109 @@
+openapi: 3.0.1
+info:
+  title: API de Usuarios
+  description: Documentación de las rutas relacionadas con usuarios. 
+  version: 1.0.0
+tags:
+- name: Usuarios
+  description: Endpoints para listar, crear, editar y eliminar usuarios.
+paths:
+  /auth/users/premium/{uid}:
+    get:
+      tags: 
+      - Usuarios
+      summary: Cambiar el rol de un usuario a premium
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: ID del usuario cuyo rol se quiere cambiar.
+      responses:
+        "200":
+          description: OK. El rol del usuario ha sido cambiado correctamente.
+        "404": 
+          description: Usuario no encontrado o no existe.
+        "409": 
+          description: Usuario ADMIN no puede cambiar de rol.
+        "400": 
+          description: Error inesperado al intentar cambiar el rol.
+        "500":
+          description: Error del servidor.
+
+  /auth/login:
+    post:
+      tags: 
+      - Usuarios
+      summary: Iniciar sesión de usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: OK. Sesión iniciada correctamente.
+
+  /auth/sendResetPasswordEmail:
+    get:
+      tags: 
+      - Usuarios
+      summary: Enviar correo electrónico de restablecimiento de contraseña
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK. Correo electrónico enviado correctamente.
+        "500":
+          description: Error del servidor.
+
+  /auth/register:
+    post:
+      tags: 
+      - Usuarios
+      summary: Registrar un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "201":
+          description: Creado. Usuario registrado correctamente.
+
+  /auth/reset-password:
+    post:
+      tags: 
+      - Usuarios
+      summary: Restablecer la contraseña de un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        "200":
+          description: OK. Contraseña actualizada correctamente.
+        "500":
+          description: Error del servidor.

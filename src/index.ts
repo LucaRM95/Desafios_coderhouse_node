@@ -1,6 +1,8 @@
+import path from "path";
 import passport from "passport";
 import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
+import swaggerUI from "swagger-ui-express";
 import expressSession from "express-session";
 import cartRouter from "./routes/cart/cart.routes";
 import userRouter from "./routes/users/user.routes";
@@ -13,7 +15,7 @@ import { passport_jwt } from "./services/helpers/auth/passport_function";
 import Exception from "./services/errors/GeneralException";
 import orderRoutes from "./routes/order/order.routes";
 import mockRoutes from "./routes/mock/mock.routes";
-import path from "path";
+import swaggerSpec from "./swaggerOptions";
 
 const app: Express = express();
 
@@ -30,6 +32,8 @@ app.use(
   })
 );
 
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
 app.use(cookieParser(env.COOKIE_SECRET || ""));
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
@@ -39,8 +43,6 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 initPassport();
-
-export const __dirname = path.resolve();
 
 app.use(passport.initialize());
 
