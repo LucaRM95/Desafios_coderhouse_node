@@ -17,7 +17,7 @@ const ProductModel = {
 const requested = supertest("http://localhost:8080");
 let auth_token: string = "";
 
-describe("Test de productos", () => {
+describe("Test módulo de productos", () => {
   before(async function () {
     const res = await requested
       .post("/auth/login")
@@ -50,7 +50,7 @@ describe("Test de productos", () => {
   });
 
   it("Debe de traer un producto por id", async function () {
-    const pid: string = "ad26fe9f-04ed-4e4f-b561-0a3e2b8fbd7c";
+    const pid: string = "92811100-b5d6-4be9-8bb2-24c6f9c5e77d";
     const { statusCode, ok, body } = await requested
       .get(`/api/product/${pid}`)
       .set("Cookie", `access_token=${auth_token}`);

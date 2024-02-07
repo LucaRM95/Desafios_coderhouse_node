@@ -1,4 +1,3 @@
-import path from "path";
 import passport from "passport";
 import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
