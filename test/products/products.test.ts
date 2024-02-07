@@ -63,8 +63,7 @@ describe("Test de productos", () => {
 
   it("Debe crear un producto correctamente o denegar en caso de existir", async function () {
     const product = {
-      _id: "92811100-b5d6-4be9-8bb2-24c6f9c5e77d",
-      code: "106",
+      code: 108,
       status: true,
       title: "iPhone 15 Pro Max",
       description: "iPhone 15 Pro Max",
@@ -79,15 +78,15 @@ describe("Test de productos", () => {
       .send(product)
       .set("Cookie", `access_token=${auth_token}`);
 
-    expect(statusCode).to.be.equal(409);
-    expect(ok).to.be.equal(false);
+    expect(statusCode).to.be.equal(201);
+    expect(ok).to.be.equal(true);
     expect(body.message).to.be.equal(
-      "The product with id 106 already exists in the database."
+      "Product has been added successfully."
     );
   });
 
   it("Debe de editar el producto seleccionado", async function () {
-    const pid: string = "bfde4659-86d3-4a2f-a76b-c5c7d107ad46";
+    const pid: string | number = 108;
     const editFields = {
       price: 1100,
       stock: 52,
@@ -103,7 +102,7 @@ describe("Test de productos", () => {
   });
 
   it("Debe de eliminar el producto correctamente", async function () {
-    const pid: string = "bfde4659-86d3-4a2f-a76b-c5c7d107ad46";
+    const pid: string | number = 108;
     const { statusCode, ok, body } = await requested
       .delete(`/api/product/${pid}`)
       .set("Cookie", `access_token=${auth_token}`);
