@@ -15,7 +15,7 @@ export  const createValidateProductData = async (
     ? true
     : false;
 
-  if (code === "" || isCodeExists) {
+  if (code === 0 || isCodeExists) {
     return res
       .status(400)
       .json({
@@ -24,7 +24,7 @@ export  const createValidateProductData = async (
       });
   }
 
-  if (!code || code.trim() === "") {
+  if (!code || code === 0) {
     return res.status(400).json({ message: "El campo código es obligatorio." });
   }
 

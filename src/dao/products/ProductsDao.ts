@@ -14,10 +14,10 @@ class ProductsDao {
   }
 
   static update(
-    pid: string | number,
+    criteria = {},
     query: any = {}
   ) {
-    return Product.updateOne({ _id: pid }, query).exec();
+    return Product.updateOne(criteria, query).exec();
   }
 
   static delete(id: string | number) {

@@ -17,7 +17,7 @@ class ProductsController {
         `The product with id ${product.code} already exists in the database.`
       );
     }
-    
+
     const {
       code,
       title,
@@ -27,7 +27,7 @@ class ProductsController {
       thumbnail = [],
       stock = 0,
     }: ProductModel = product;
-    
+
     const newProduct = {
       _id: uuidv4(),
       code,
@@ -41,7 +41,7 @@ class ProductsController {
       stock,
     };
 
-    return ProductsDao.create(newProduct); 
+    return ProductsDao.create(newProduct);
   }
 
   static async getProducts(
@@ -72,7 +72,7 @@ class ProductsController {
     };
 
     const res: any = await ProductsDao.get(criteria);
-    
+
     if (res.length === 0) {
       throw new NotFoundException(
         `The product with id ${id} doesn't exists in the database.`
@@ -86,7 +86,10 @@ class ProductsController {
     id: string | number,
     updatedProduct: Partial<ProductModel>
   ) {
-    const res = await ProductsDao.update(id, { $set: updatedProduct });
+    const criteria = {
+      $or: [{ _id: { $eq: id } }, { code: { $eq: id } }],
+    };
+    const res = await ProductsDao.update(criteria, { $set: updatedProduct });
 
     if (res.matchedCount === 0) {
       throw new NotFoundException(
@@ -101,7 +104,9 @@ class ProductsController {
     const res = await ProductsDao.delete(id);
 
     if (!id) {
-      throw new BadRequestException("The id is necessary to delete the product.");
+      throw new BadRequestException(
+        "The id is necessary to delete the product."
+      );
     }
     if (res.deletedCount !== 1) {
       throw new NotFoundException(

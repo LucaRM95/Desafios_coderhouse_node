@@ -35,7 +35,7 @@ productsRouter.get(
   passport_jwt,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const pid = req.params.pid;
+      const pid: string | number = req.params.pid;
 
       const query_res = await ProductsController.getProductByID(pid);
 
@@ -71,7 +71,7 @@ productsRouter.put(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const product: ProductModel = req.body;
-      const pid = req.params.pid;
+      const pid: string | number = req.params.pid;
 
       const query_res = await ProductsController.updateProduct(pid, product);
 
