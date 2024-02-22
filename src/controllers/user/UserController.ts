@@ -55,10 +55,17 @@ class UserController {
       );
     }
 
-    if(!findedUser[0]?.documents){
-      throw new NotFoundException("You need to upload your identification, address and status account to upgrade to premium.")
-    }
+    const documentsFindedToUpgrade = findedUser[0]?.documents.filter(
+      (doc: any) =>
+        doc.name.includes("DNI") ||
+        doc.name.includes("address") ||
+        doc.name.includes("account_status")
+    );
 
+    if(documentsFindedToUpgrade.length < 3){
+      throw new NotFoundException("You need to upload your identification, address and status account to upgrade to premium.");
+    }
+    
     const role = findedUser[0].role === "PREMIUM" ? "USER" : "PREMIUM";
 
     const criteria = { $set: { role: role } };
@@ -75,9 +82,11 @@ class UserController {
   static async uploadDocuments(req: Request, uid: string) {
     const user: UserModel | any = await UserDao.get({ _id: uid });
     const newDocument = { name: req.body?.name, reference: req.file?.path };
-    
-    if(!req.body?.name && !req.file?.path){
-      throw new BadRequestException("The fields name and reference are neccessary.")
+
+    if (!req.body?.name && !req.file?.path) {
+      throw new BadRequestException(
+        "The fields name and reference are neccessary."
+      );
     }
 
     if (
@@ -109,7 +118,9 @@ class UserController {
         }
       );
     } else {
-      throw new BadRequestException("An error has occurred trying to upload files.");
+      throw new BadRequestException(
+        "An error has occurred trying to upload files."
+      );
     }
   }
 
