@@ -15,10 +15,7 @@ export const passport_login = (
         throw new UnauthorizedException(err?.message);
       }
 
-      const result = await UserController.loginUser(email, password);
-      if (!result) {
-        throw new UnauthorizedException("Password or email are invalid.");
-      }
+      await UserController.loginUser(email, password);
 
       if (!body) {
         throw new UnauthorizedException(

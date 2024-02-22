@@ -1,23 +1,14 @@
 import express, { IRouter, NextFunction, Request, Response } from "express";
-import { tokenGenerator } from "../../services/helpers/auth/token_helpers";
 import {
   passport_jwt,
-  passport_login,
-  passport_register,
 } from "../../services/helpers/auth/passport_function";
-import { validateRegisterData } from "../../middlewares/auth/validateRegisterData";
 import UserController from "../../controllers/user/UserController";
+import { uploader } from "../../services/config/multer.config";
 
 const userRouter: IRouter = express.Router();
 
-const cookieOpts = {
-  maxAge: 2 * 60 * 60 * 1000,
-  httpOnly: true,
-  signed: true,
-};
-
 userRouter.get(
-  "/users/premium/:uid",
+  "/premium/:uid",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { uid } = req.params;
@@ -31,53 +22,15 @@ userRouter.get(
 );
 
 userRouter.post(
-  "/login",
-  passport_login,
-  (req: Request, res: Response, next: NextFunction) => {
-    const token = tokenGenerator(req.body.user);
-
-    return res
-      .cookie("access_token", token, cookieOpts)
-      .status(200)
-      .json({ status: 200, message: "You have logged successfully." });
-  }
-);
-
-userRouter.get(
-  "/sendResetPasswordEmail",
+  "/:uid/documents",
   passport_jwt,
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { email }: any = req.user;
-    try {
-      await UserController.requestPasswordReset(email);
-      res.status(200).json({
-        message:
-          "Correo de restablecimiento de contraseña enviado correctamente",
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-userRouter.post(
-  "/register",
-  validateRegisterData,
-  passport_register,
-  async (req: Request, res: Response) => {
-    const { result }: any = req.body;
-
-    return res.status(201).json(result);
-  }
-);
-
-userRouter.post(
-  "/reset-password",
+  uploader.single("reference"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await UserController.resetPassword(req);
-      
-      res.status(200).json({ message: "Contraseña actualizada con éxito" });
+      const { uid } = req.params;
+      await UserController.uploadDocuments(req, uid);
+
+      res.status(200).json({ message: "Document uploaded successfully." });
     } catch (error) {
       next(error);
     }

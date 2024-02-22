@@ -8,10 +8,12 @@ const userSchema = new Schema<UserModel>({
   first_name: String,
   last_name: String,
   email: { type: String, required: true, unique: true },
+  documents: [{ name: String, reference: String }],
   age: Number,
   cid: { type: String },
   role: { type: String, default: 'USER', enum: ['USER', 'ADMIN', 'PREMIUM'] },
   password: String,
+  last_connection: { type: String }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

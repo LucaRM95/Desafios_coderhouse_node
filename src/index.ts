@@ -9,12 +9,12 @@ import productsRouter from "./routes/products/products.routes";
 import env  from "./services/config/dotenv.config";
 import { init as initPassport } from './services/config/passport.config';
 import express, { Express, NextFunction, Request, Response, urlencoded } from "express";
-import sessionRouter from "./routes/sessions/session.routes";
 import { passport_jwt } from "./services/helpers/auth/passport_function";
 import Exception from "./services/errors/GeneralException";
 import orderRoutes from "./routes/order/order.routes";
 import mockRoutes from "./routes/mock/mock.routes";
 import swaggerSpec from "./swaggerOptions";
+import authRouter from "./routes/sessions/auth.routes";
 
 const app: Express = express();
 
@@ -45,10 +45,10 @@ initPassport();
 
 app.use(passport.initialize());
 
-app.use("/auth", userRouter);
+app.use("/auth", authRouter);
 app.use("/api", productsRouter, mockRoutes);
 app.use("/api/cart", passport_jwt, cartRouter, orderRoutes);
-app.use("/sessions", sessionRouter);
+app.use("/api/users", passport_jwt, userRouter)
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof Exception) {

@@ -1,4 +1,7 @@
-import { hashPass, validatePass } from "../../services/helpers/auth/auth_helpers";
+import {
+  hashPass,
+  validatePass,
+} from "../../services/helpers/auth/auth_helpers";
 import { UserModel } from "../../services/interfaces/UserInterface";
 import UserDao from "../../dao/user/UserDao";
 import NotFoundException from "../../services/errors/NotFoundException";
@@ -10,8 +13,9 @@ import {
 } from "../../services/helpers/auth/token_helpers";
 import EmailService from "../../services/email/email.service";
 import Exception from "../../services/errors/GeneralException";
-import { query } from "express";
 import ConflictException from "../../services/errors/ConflictException";
+import { Request } from "express";
+import { uploader } from "../../services/config/multer.config";
 
 class UserController {
   static async loginUser(email: string, pass: string) {
@@ -22,6 +26,15 @@ class UserController {
     }
 
     const isValidPassword = validatePass(pass, userFinded[0]);
+
+    await UserDao.update(
+      { _id: userFinded[0]._id },
+      {
+        $set: {
+          last_connection: Date.now(),
+        },
+      }
+    );
 
     if (!isValidPassword) {
       throw new NotFoundException("Password or email are invalid.");
@@ -42,6 +55,10 @@ class UserController {
       );
     }
 
+    if(!findedUser[0]?.documents){
+      throw new NotFoundException("You need to upload your identification, address and status account to upgrade to premium.")
+    }
+
     const role = findedUser[0].role === "PREMIUM" ? "USER" : "PREMIUM";
 
     const criteria = { $set: { role: role } };
@@ -52,6 +69,47 @@ class UserController {
         "An error has occurred trying to change the user role.",
         400
       );
+    }
+  }
+
+  static async uploadDocuments(req: Request, uid: string) {
+    const user: UserModel | any = await UserDao.get({ _id: uid });
+    const newDocument = { name: req.body?.name, reference: req.file?.path };
+    
+    if(!req.body?.name && !req.file?.path){
+      throw new BadRequestException("The fields name and reference are neccessary.")
+    }
+
+    if (
+      req.body?.name.toLocaleLowerCase() === "dni" ||
+      req.body?.name.toLocaleLowerCase() === "address" ||
+      req.body?.name.toLocaleLowerCase() === "account_status" ||
+      req.body?.name.toLocaleLowerCase() === "profiles" ||
+      req.body?.name.toLocaleLowerCase() === "products"
+    ) {
+      const documents = user[0]?.documents || [];
+      let updatedDocuments = [...documents];
+
+      const existingDocumentIndex = documents.findIndex(
+        (doc: any) => doc.name === req.body?.name
+      );
+
+      if (existingDocumentIndex !== -1) {
+        updatedDocuments[existingDocumentIndex] = newDocument;
+      } else {
+        updatedDocuments.push(newDocument);
+      }
+
+      await UserDao.update(
+        { _id: uid },
+        {
+          $set: {
+            documents: updatedDocuments,
+          },
+        }
+      );
+    } else {
+      throw new BadRequestException("An error has occurred trying to upload files.");
     }
   }
 
@@ -97,7 +155,7 @@ class UserController {
     if (!user) {
       throw new NotFoundException("User not found.");
     }
-  
+
     const resetToken = generateResetToken(user[0]);
     const resetLink = `http://localhost:8080/auth/reset-password?token=${resetToken}`;
 
@@ -123,12 +181,14 @@ class UserController {
         400
       );
     }
-    
+
     const { id } = decodedToken;
     const findedUser: any = await UserDao.get({ _id: id });
 
-    if(validatePass(password, findedUser[0])){
-      throw new ConflictException("You must use a different password than the current one.");
+    if (validatePass(password, findedUser[0])) {
+      throw new ConflictException(
+        "You must use a different password than the current one."
+      );
     }
 
     const hashedPassword = hashPass(password);
