@@ -13,5 +13,5 @@ export interface UserModel {
   role: string;
   documents: Array<DocumentObject>;
   password: string;
-  last_connection: string;
+  last_connection: number;
 }

@@ -13,7 +13,7 @@ const userSchema = new Schema<UserModel>({
   cid: { type: String },
   role: { type: String, default: 'USER', enum: ['USER', 'ADMIN', 'PREMIUM'] },
   password: String,
-  last_connection: { type: String }
+  last_connection: { type: Number }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

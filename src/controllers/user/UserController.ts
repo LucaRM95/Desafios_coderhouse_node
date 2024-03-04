@@ -15,9 +15,26 @@ import EmailService from "../../services/email/email.service";
 import Exception from "../../services/errors/GeneralException";
 import ConflictException from "../../services/errors/ConflictException";
 import { Request } from "express";
-import { uploader } from "../../services/config/multer.config";
 
 class UserController {
+  static async getUsers() {
+    const users: Array<UserModel> | any = await UserDao.get({});
+
+    const usersMainData = [
+      ...users.map((user: UserModel) => {
+        return {
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          role: user.role,
+          last_connection: user.last_connection,
+        };
+      }),
+    ];
+
+    return usersMainData;
+  }
+
   static async loginUser(email: string, pass: string) {
     const userFinded: UserModel | any = await UserDao.get({ email });
 
@@ -62,10 +79,12 @@ class UserController {
         doc.name.includes("account_status")
     );
 
-    if(documentsFindedToUpgrade.length < 3){
-      throw new NotFoundException("You need to upload your identification, address and status account to upgrade to premium.");
+    if (documentsFindedToUpgrade.length < 3) {
+      throw new NotFoundException(
+        "You need to upload your identification, address and status account to upgrade to premium."
+      );
     }
-    
+
     const role = findedUser[0].role === "PREMIUM" ? "USER" : "PREMIUM";
 
     const criteria = { $set: { role: role } };
@@ -205,6 +224,31 @@ class UserController {
     const hashedPassword = hashPass(password);
 
     await UserDao.update({ _id: id }, { password: hashedPassword });
+  }
+
+  static async deleteInactiveUsers(connection_limit: number) {
+    const users: Array<UserModel> | any = await UserDao.get({});
+
+    const inactiveUsers = users.filter(
+      (user: UserModel) => user.last_connection < connection_limit
+    );
+
+    if (inactiveUsers.length === 0) {
+      throw new NotFoundException("There not inactive users to remove.");
+    }
+
+    inactiveUsers.map(async (user: any) => {
+      const emailService = new EmailService();
+
+      await UserDao.delete(user._id);
+
+      await emailService.sendEmail(
+        user.email,
+        "Cuenta eliminada por inactividad",
+        `Estimado/a ${user.first_name}, <br><br> Su cuenta ha sido eliminada debido a la inactividad. 
+            Si desea volver a utilizar nuestros servicios, por favor regístrese nuevamente.`
+      );
+    });
   }
 }
 
