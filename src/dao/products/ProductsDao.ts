@@ -1,5 +1,5 @@
 import { ProductModel } from "../../services/interfaces/ProductInterface";
-import Product from "../../models/products/products.model";
+import Product from "../../models/products/product.models";
 
 class ProductsDao {
   static get(criteria = {}, paginate = false, options = {}) {

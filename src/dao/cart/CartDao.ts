@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid";
-import Cart from "../../models/cart/carts.model";
+import Cart from "../../models/cart/cart.models";
 
 class CartDao {
   static get(filter_query: any = {}, criteria: any = {}) {
