@@ -12,8 +12,12 @@ export const authPolicies =
         if (req.originalUrl.includes("/api/cart/product") && action === "add") {
           const productFinded: Array<ProductModel> =
             await ProductsController.getProductByID(req.body?.pid);
-            
-          if ((req.user as UserModel).email === productFinded[0].owner) {
+          if (
+            productFinded &&
+            productFinded.length > 0 &&
+            (req.user as UserModel).email ===
+              (productFinded[0] as ProductModel)?.owner
+          ) {
             throw new UnauthorizedException(
               "You're the owner of this product and you can't add to cart."
             );
@@ -22,7 +26,7 @@ export const authPolicies =
 
         return next();
       }
-      const { role }: UserModel | any = req.user;
+      const { role }: UserModel | any = req?.user;
       if (!roles.includes(role)) {
         throw new UnauthorizedException(
           `Sorry, you don't have authorization to ${action} a product.`
@@ -32,12 +36,14 @@ export const authPolicies =
         req.originalUrl.includes("/api/product") &&
         (action === "edit" || action === "delete")
       ) {
-        const productFinded = await ProductsController.getProductByID(
-          req.params?.pid
-        );
+        const productFinded: Array<ProductModel> =
+          await ProductsController.getProductByID(req.params?.pid);
         if (
-          (req.user as UserModel).email !== productFinded?.owner &&
-          (req.user as UserModel).role !== "ADMIN"
+          productFinded &&
+          productFinded.length > 0 &&
+          (req.user as UserModel)?.email !==
+            (productFinded[0] as ProductModel)?.owner &&
+          (req.user as UserModel)?.role !== "ADMIN"
         ) {
           throw new UnauthorizedException(
             "Only the owner or an Admin can modify or delete this product."

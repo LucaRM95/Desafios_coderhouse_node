@@ -5,6 +5,9 @@ import NotFoundException from "../../services/errors/NotFoundException";
 import ConflictException from "../../services/errors/ConflictException";
 import { ProductModel } from "../../services/interfaces/ProductInterface";
 import BadRequestException from "../../services/errors/BadRequestException";
+import { UserModel } from "../../services/interfaces/UserInterface";
+import UserDao from "../../dao/user/UserDao";
+import EmailService from "../../services/email/email.service";
 
 class ProductsController {
   static async addProduct(product: ProductModel, currentUser: any) {
@@ -31,7 +34,7 @@ class ProductsController {
     const newProduct = {
       _id: uuidv4(),
       code,
-      owner: currentUser.role === "PREMIUM" ? currentUser.email : "ADMIN",
+      owner: currentUser?.role === "PREMIUM" ? currentUser?.email : "ADMIN",
       status: true,
       title,
       category,
@@ -101,7 +104,22 @@ class ProductsController {
   }
 
   static async deleteProduct(id: string | number) {
+    const emailService = new EmailService;
+    const product: Array<ProductModel> | any = await ProductsDao.get({ '$or': [ { _id: id }, { code: id } ] });
+    const user: Array<UserModel> | any = await UserDao.get({ email: product[0]?.owner })
+
     const res = await ProductsDao.delete(id);
+
+    if(user[0]?.role === 'PREMIUM'){
+      console.log("Enviando mail de eliminacion de producto.....")
+      await emailService.sendEmail(
+        user[0]?.email,
+        "Un producto suyo ha sido eliminado del la app ecommerce.",
+        `Estimado/a ${user[0]?.first_name}, <br><br> Se ha eliminado el producto ${product[0]?.title}.
+            Si usted elimino el producto omita este correo.
+            Si desea obtener más detalles, por favor comuníquese con nuestro soporte al (0810) 1111-2222.`
+      );
+    }
 
     if (!id) {
       throw new BadRequestException(
