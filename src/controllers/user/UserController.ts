@@ -38,7 +38,7 @@ class UserController {
   static async loginUser(email: string, pass: string) {
     const userFinded: UserModel | any = await UserDao.get({ email });
 
-    if (!userFinded) {
+    if (!userFinded[0]) {
       throw new NotFoundException("Password or email are invalid.");
     }
 
