@@ -15,8 +15,15 @@ import orderRoutes from "./routes/order/order.routes";
 import mockRoutes from "./routes/mock/mock.routes";
 import swaggerSpec from "./swaggerOptions";
 import authRouter from "./routes/sessions/auth.routes";
+import cors from "cors";
 
 const app: Express = express();
+
+app.use(cors({
+  origin: 'http://localhost:5173/',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+}));
 
 app.use(
   expressSession({
