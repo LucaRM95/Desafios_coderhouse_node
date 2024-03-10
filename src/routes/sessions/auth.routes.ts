@@ -22,7 +22,7 @@ authRouter.post(
     return res
       .cookie("access_token", token, cookieOpts)
       .status(200)
-      .json({ status: 200, message: "You have logged successfully." });
+      .json({ status: 200, token:"token" });
   }
 );
 
