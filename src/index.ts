@@ -50,8 +50,9 @@ app.use(passport.initialize());
 
 app.use("/auth", authRouter);
 app.use("/api", productsRouter, mockRoutes);
-app.use("/api/cart", passport_jwt, cartRouter, orderRoutes);
-app.use("/api/users", passport_jwt, userRouter)
+app.use("/api/cart", passport_jwt, cartRouter);
+app.use("/api/order", orderRoutes);
+app.use("/api/users", passport_jwt, userRouter);
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof Exception) {

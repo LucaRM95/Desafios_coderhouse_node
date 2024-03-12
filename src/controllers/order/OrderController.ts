@@ -6,6 +6,33 @@ import SessionController from "../session/SessionController";
 import CartController from "../cart/CartController";
 import ProductsDao from "../../dao/products/ProductsDao";
 import ConflictException from "../../services/errors/ConflictException";
+import UserController from "../user/UserController";
+import PaymentsService from "../../services/payment/payment.services";
+import env from "../../services/config/dotenv.config"
+
+interface PaymentProduct {
+  id: number;
+  title: string;
+  description: string;
+  unit_amount: number;
+  quantity: number;
+}
+
+interface ProductArray {
+  pid: {
+    _id: string;
+    title: string;
+    description: string;
+    price: number;
+  };
+  quantity: number;
+}
+
+interface Order {
+  amount: number;
+  purchaser: string;
+  products?: ProductArray[];
+}
 
 class OrderController {
   static async generateOrder(req: Request) {
@@ -19,10 +46,15 @@ class OrderController {
     }
 
     for (const { pid, quantity } of products) {
-      if(pid.stock < quantity){
-        throw new ConflictException(`The product ${pid.title} haven't enough stock.`);
+      if (pid.stock < quantity) {
+        throw new ConflictException(
+          `The product ${pid.title} haven't enough stock.`
+        );
       }
-      await ProductsDao.update(pid._id, { $inc: { stock: -quantity } });
+      await ProductsDao.update(
+        { _id: pid._id },
+        { $inc: { stock: -quantity } }
+      );
     }
 
     const newOrder = {
@@ -31,11 +63,22 @@ class OrderController {
       amount: products.reduce((acc: number, p: any) => {
         return acc + p.pid.price * p.quantity;
       }, 0),
-      products: products.map(({ pid }: any) => pid._id) || [],
+      products: products.map((p: ProductArray) => {
+        return {
+          pid: p.pid._id,
+          title: p.pid.title,
+          description: p.pid.description,
+          unit_amount: p.pid.price,
+          quantity: p.quantity,
+        };
+      }),
       purchaser: user.email,
     };
 
-    await CartController.deleteProduct(user.cid, products.map(({ pid }: any) => pid._id));
+    await CartController.deleteProduct(
+      user.cid,
+      products.map(({ pid }: any) => pid._id)
+    );
     return OrderDao.create(newOrder);
   }
 
@@ -47,6 +90,40 @@ class OrderController {
     }
 
     return order;
+  }
+
+  static async paymentMethod(oid: string) {
+    const order: Order | any = await OrderController.getOrder(oid);
+    const users = await UserController.getUsers();
+    const user = users.find((u: any) => u.email === order?.purchaser);
+
+    if (!order.products) {
+      throw new NotFoundException("product not found.");
+    }
+
+    const paymentIntentInfo = {
+      line_items: order.products.map((product: PaymentProduct) => {
+        return {
+          price_data: {
+            product_data: {
+              name: product.title,
+              description: product.description,
+            },
+            currency: "usd",
+            unit_amount: product.unit_amount * 100,
+          },
+          quantity: product.quantity,
+        };
+      }),
+      mode: "payment",
+      success_url: `${env.URL}api/order/payment/success/${oid}`,
+      cancel_url: `${env.URL}api/order/payment/cancel`,
+    };
+
+    const service = new PaymentsService();
+    const result = await service.createPaymentIntent(paymentIntentInfo);
+
+    return result;
   }
 
   static async deleteOrder(oid: string) {

@@ -18,7 +18,6 @@ authRouter.post(
   passport_login,
   (req: Request, res: Response, next: NextFunction) => {
     const token = tokenGenerator(req.body.user);
-
     return res
       .cookie("access_token", token, cookieOpts)
       .status(200)

@@ -41,7 +41,8 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "ts-node": "^10.9.2",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "stripe": "^14.18.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

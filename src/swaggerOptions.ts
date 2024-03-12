@@ -3,8 +3,6 @@ import swaggerJSDoc from "swagger-jsdoc";
 
 export const __dirname = path.resolve();
 
-console.log(`${__dirname}/src/docs/**/*.yaml`)
-
 export const swaggerOptions: swaggerJSDoc.Options = {
   definition: {
     openapi: "3.0.0",

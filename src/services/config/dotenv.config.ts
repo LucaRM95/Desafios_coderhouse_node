@@ -10,6 +10,8 @@ export default {
   JWT_SECRET: process.env.JWT_SECRET,
   URI: process.env.URI,
   PORT: process.env.PORT,
+  STRIPE_SECRET: process.env.STRIPE_SECRET,
+  URL: process.env.URL,
   mail: {
     service: process.env.EMAIL_SERVICE || "gmail",
     port: process.env.EMAIL_PORT || 587,

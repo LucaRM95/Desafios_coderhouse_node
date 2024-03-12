@@ -2,11 +2,8 @@ import Order from "../../models/order/order.model";
 
 class OrderDao {
   static get(oid: string | number) {
-    return Order.findOne({ 
-        $or: [
-            { _id: { $eq: oid } }, 
-            { code: { $eq: oid } }
-        ] 
+    return Order.findOne({
+      $or: [{ _id: { $eq: oid } }, { code: { $eq: oid } }],
     }).exec();
   }
 
@@ -15,7 +12,9 @@ class OrderDao {
   }
 
   static delete(oid: string) {
-    return Order.deleteOne({ _id: oid });
+    return Order.deleteOne({
+      $or: [{ _id: { $eq: oid } }, { code: { $eq: oid } }],
+    });
   }
 }
 
